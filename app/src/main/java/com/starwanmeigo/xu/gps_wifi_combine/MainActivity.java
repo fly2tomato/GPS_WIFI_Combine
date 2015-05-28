@@ -4,6 +4,8 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -27,8 +31,19 @@ public class MainActivity extends ActionBarActivity {
     private double speed_gps = 0;
     private double bearing_gps = 0;
     private double accuracy_gps = 0;
+
+    //set coordinates of routers
+    double ap1_x = 0;
+    double ap1_y = 0.60;
+    double ap2_x = 3.15;
+    double ap2_y = 2.50;
+    double ap3_x = 5.65;
+    double ap3_y = 1.30;
+    //collect 20 data
+    int arraySize = 50;
     private double x_wifi = 0;
     private double y_wifi = 0;
+
     private double longitude_kf = 0;
     private double latitude_kf = 0;
 
@@ -107,6 +122,60 @@ public class MainActivity extends ActionBarActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        double rssiLevel_2_sum = 0;
+                        double[] routerInfoArray1 = new double[arraySize];
+                        double[] routerInfoArray2 = new double[arraySize];
+                        double[] routerInfoArray3 = new double[arraySize];
+
+                        // get Router Info for 3 ssids, <arraySize> times
+                        for(int i =0;i<arraySize;i++){
+                            double [] rssiLevel_  = getRouterInfo();
+                            routerInfoArray1[i] = rssiLevel_[0];
+                            routerInfoArray2[i] = rssiLevel_[1];
+                            routerInfoArray3[i] = rssiLevel_[2];
+                            try{
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        //deal with the array routerInfoArray[]
+
+                        // deal with the raw data
+                        double sum1 = 0;
+                        double sum2 = 0;
+                        double sum3 = 0;
+                        //log info
+                        String ssid1Log = new String("SSID1: ");
+                        String ssid2Log = new String("SSID2: ");
+                        String ssid3Log = new String("SSID3: ");
+                        for(int i =0;i<arraySize;i++){
+                            sum1 += routerInfoArray1[i];
+                            sum2 += routerInfoArray2[i];
+                            sum3 += routerInfoArray3[i];
+                            ssid1Log = ssid1Log.concat(Double.toString(routerInfoArray1[i])).concat(" ");
+                            ssid2Log = ssid2Log.concat(Double.toString(routerInfoArray2[i])).concat(" ");
+                            ssid3Log = ssid3Log.concat(Double.toString(routerInfoArray3[i])).concat(" ");
+                        }
+
+                        selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1,routerInfoArray2,routerInfoArray3);
+
+                        final double [] bestRssi = sBR.funktionOfX();
+                        final double bestRssi1 = bestRssi [0];
+                        final double bestRssi2 = bestRssi [1];
+                        final double bestRssi3 = bestRssi [2];
+
+                        //calc distance with rssi
+                        CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
+                        double [] D_Float_ = calcDistance.getDistance();
+                        double D_1Float =  D_Float_ [0];
+                        double D_2Float =  D_Float_ [1];
+                        double D_3Float =  D_Float_ [2];
+                        //calc the Location
+                        CalcLocation calclocation = new CalcLocation(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
+                        final double XFloat = calclocation.getLocationX();
+                        final double YFloat = calclocation.getLocationY();
                         allAP.post(new Runnable() {
                             @Override
                             public void run() {
@@ -121,6 +190,7 @@ public class MainActivity extends ActionBarActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+
                         allAP.post(new Runnable() {
                             @Override
                             public void run() {
@@ -134,6 +204,46 @@ public class MainActivity extends ActionBarActivity {
         });
     }
 
+    protected double [] getRouterInfo(){
+        List<ScanResult> wifiList;
+        WifiManager wifiManager;
+        wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        wifiList = (List<android.net.wifi.ScanResult>) wifiManager.getScanResults();
+
+        double level [] = new double[wifiList.size()];
+        String ssid [] = new String[wifiList.size()];
+        double level_1 = 0;
+        String ssidName_1 ="ap1";
+        double level_2 = 0;
+        String ssidName_2 ="ap2";
+        double level_3 = 0;
+        String ssidName_3 ="ap3";
+
+        for (int i=0;i<wifiList.size();i++) {
+            level [i] = wifiList.get(i).level;
+            ssid [i] = wifiList.get(i).SSID;
+            if (ssid[i].equals(ssidName_1)){
+                level_1 = level[i];
+            }
+            else if (ssid[i].equals(ssidName_2)){
+                level_2 = level[i];
+            }
+            else if (ssid[i].equals(ssidName_3)){
+                level_3 = level[i];
+            }
+            else {
+                //Log.d("MainActivity", "finding the APs!" );
+                //Toast.makeText(this, "finding the APs!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        double level_ [] = new double[3];
+        level_ [0] = level_1;
+        level_ [1] = level_2;
+        level_ [2] = level_3;
+
+        return level_;
+    }
 
 
 
