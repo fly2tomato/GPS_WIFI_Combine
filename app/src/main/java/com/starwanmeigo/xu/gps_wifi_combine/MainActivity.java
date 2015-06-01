@@ -31,6 +31,8 @@ public class MainActivity extends ActionBarActivity {
     private double speed_gps = 0;
     private double bearing_gps = 0;
     private double accuracy_gps = 0;
+    private double [] longitude_gps_array;
+    private double [] latitude_gps_array;
 
     //set coordinates of routers
     double ap1_x = 0;
@@ -43,13 +45,17 @@ public class MainActivity extends ActionBarActivity {
     int arraySize = 50;
     private double x_wifi = 0;
     private double y_wifi = 0;
+    private double [] x_wifi_array;
+    private double [] y_wifi_array;
+
+    private double accuracy_wifi = 4;
 
     private double longitude_kf = 0;
     private double latitude_kf = 0;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final LinearLayout allAP = (LinearLayout) findViewById(R.id.allAP);
@@ -79,27 +85,8 @@ public class MainActivity extends ActionBarActivity {
                             }
                         });
 
-                        // 获取系统LocationManager服务
-                        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                        // 从GPS获取最近的定位信息
-                        mCurrentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
 
-                        if(mCurrentLocation != null){
-                            longitude_gps = mCurrentLocation.getLongitude();
-                            latitude_gps = mCurrentLocation.getLatitude();
-                            speed_gps = mCurrentLocation.getSpeed();
-                            bearing_gps = mCurrentLocation.getBearing();
-                            accuracy_gps = mCurrentLocation.getAccuracy();
-                            Log.d("Longitude","Longitude:"+longitude_gps);
-                            Log.d("Latitude","Latitude:"+latitude_gps);
-                            Log.d("speed","speed:"+speed_gps);
-                            Log.d("bearing","bearing:"+bearing_gps);
-                            Log.d("accuracy","accuracy:"+accuracy_gps);
-                        }else {
-                            Longitude.setText(null);
-                            Latitude.setText(null);
-                        }
 
 
                         //update UI
@@ -122,67 +109,71 @@ public class MainActivity extends ActionBarActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        double rssiLevel_2_sum = 0;
-                        double[] routerInfoArray1 = new double[arraySize];
-                        double[] routerInfoArray2 = new double[arraySize];
-                        double[] routerInfoArray3 = new double[arraySize];
+                        for(int count=0;count<5;count++){
+                            double rssiLevel_2_sum = 0;
+                            double[] routerInfoArray1 = new double[arraySize];
+                            double[] routerInfoArray2 = new double[arraySize];
+                            double[] routerInfoArray3 = new double[arraySize];
 
-                        // get Router Info for 3 ssids, <arraySize> times
-                        for(int i =0;i<arraySize;i++){
-                            double [] rssiLevel_  = getRouterInfo();
-                            routerInfoArray1[i] = rssiLevel_[0];
-                            routerInfoArray2[i] = rssiLevel_[1];
-                            routerInfoArray3[i] = rssiLevel_[2];
-                            try{
-                                Thread.sleep(500);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                            // get Router Info for 3 ssids, <arraySize> times
+                            for(int i =0;i<arraySize;i++){
+                                double [] rssiLevel_  = getRouterInfo();
+                                routerInfoArray1[i] = rssiLevel_[0];
+                                routerInfoArray2[i] = rssiLevel_[1];
+                                routerInfoArray3[i] = rssiLevel_[2];
+                                try{
+                                    Thread.sleep(500);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        }
 
-                        //deal with the array routerInfoArray[]
+                            //deal with the array routerInfoArray[]
 
-                        // deal with the raw data
-                        double sum1 = 0;
-                        double sum2 = 0;
-                        double sum3 = 0;
-                        //log info
-                        String ssid1Log = new String("SSID1: ");
-                        String ssid2Log = new String("SSID2: ");
-                        String ssid3Log = new String("SSID3: ");
-                        for(int i =0;i<arraySize;i++){
-                            sum1 += routerInfoArray1[i];
-                            sum2 += routerInfoArray2[i];
-                            sum3 += routerInfoArray3[i];
-                            ssid1Log = ssid1Log.concat(Double.toString(routerInfoArray1[i])).concat(" ");
-                            ssid2Log = ssid2Log.concat(Double.toString(routerInfoArray2[i])).concat(" ");
-                            ssid3Log = ssid3Log.concat(Double.toString(routerInfoArray3[i])).concat(" ");
-                        }
-
-                        selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1,routerInfoArray2,routerInfoArray3);
-
-                        final double [] bestRssi = sBR.funktionOfX();
-                        final double bestRssi1 = bestRssi [0];
-                        final double bestRssi2 = bestRssi [1];
-                        final double bestRssi3 = bestRssi [2];
-
-                        //calc distance with rssi
-                        CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
-                        double [] D_Float_ = calcDistance.getDistance();
-                        double D_1Float =  D_Float_ [0];
-                        double D_2Float =  D_Float_ [1];
-                        double D_3Float =  D_Float_ [2];
-                        //calc the Location
-                        CalcLocation calclocation = new CalcLocation(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
-                        final double XFloat = calclocation.getLocationX();
-                        final double YFloat = calclocation.getLocationY();
-                        allAP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                X_WIFI.setText(Double.toString(x_wifi));
-                                Y_WIFI.setText(Double.toString(y_wifi));
+                            // deal with the raw data
+                            double sum1 = 0;
+                            double sum2 = 0;
+                            double sum3 = 0;
+                            //log info
+                            String ssid1Log = new String("SSID1: ");
+                            String ssid2Log = new String("SSID2: ");
+                            String ssid3Log = new String("SSID3: ");
+                            for(int i =0;i<arraySize;i++){
+                                sum1 += routerInfoArray1[i];
+                                sum2 += routerInfoArray2[i];
+                                sum3 += routerInfoArray3[i];
+                                ssid1Log = ssid1Log.concat(Double.toString(routerInfoArray1[i])).concat(" ");
+                                ssid2Log = ssid2Log.concat(Double.toString(routerInfoArray2[i])).concat(" ");
+                                ssid3Log = ssid3Log.concat(Double.toString(routerInfoArray3[i])).concat(" ");
                             }
-                        });
+
+                            selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1,routerInfoArray2,routerInfoArray3);
+
+                            final double [] bestRssi = sBR.funktionOfX();
+                            final double bestRssi1 = bestRssi [0];
+                            final double bestRssi2 = bestRssi [1];
+                            final double bestRssi3 = bestRssi [2];
+
+                            //calc distance with rssi
+                            CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
+                            double [] D_Float_ = calcDistance.getDistance();
+                            double D_1Float =  D_Float_ [0];
+                            double D_2Float =  D_Float_ [1];
+                            double D_3Float =  D_Float_ [2];
+                            //calc the Location
+                            CalcLocation calclocation = new CalcLocation(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
+                            final double XFloat = calclocation.getLocationX();
+                            final double YFloat = calclocation.getLocationY();
+                            x_wifi_array [count] = XFloat;
+                            y_wifi_array [count] = YFloat;
+                            allAP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    X_WIFI.setText(Double.toString(XFloat));
+                                    Y_WIFI.setText(Double.toString(YFloat));
+                                }
+                            });
+                        }
                     }
                 }).start();
                 
@@ -191,6 +182,12 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void run() {
 
+                        //we should convert Cartesian To Lon and Lat here!
+
+                        //
+                        kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps, x_wifi_array,y_wifi_array ,accuracy_gps,accuracy_wifi);
+                        double X = KF.kalman_Filter_Process_X();
+                        double Y = KF.kalman_Filter_Process_Y();
                         allAP.post(new Runnable() {
                             @Override
                             public void run() {
@@ -202,6 +199,57 @@ public class MainActivity extends ActionBarActivity {
                 }).start();
             }
         });
+    }
+
+    protected double [] getGpsInfo(){
+        double longitude_gps_sum = 0;
+        double latitude_gps_sum = 0;
+        for(int i =0;i<arraySize;i++){
+            // 获取系统LocationManager服务
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            // 从GPS获取最近的定位信息
+            mCurrentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+
+            if(mCurrentLocation != null){
+                longitude_gps = mCurrentLocation.getLongitude();
+                latitude_gps = mCurrentLocation.getLatitude();
+                speed_gps = mCurrentLocation.getSpeed();
+                bearing_gps = mCurrentLocation.getBearing();
+                accuracy_gps = mCurrentLocation.getAccuracy();
+                Log.d("Longitude","Longitude:"+longitude_gps);
+                Log.d("Latitude","Latitude:"+latitude_gps);
+                Log.d("speed","speed:"+speed_gps);
+                Log.d("bearing","bearing:"+bearing_gps);
+                Log.d("accuracy","accuracy:"+accuracy_gps);
+            }else {
+                longitude_gps = Double.parseDouble(null);
+                latitude_gps = Double.parseDouble(null);
+            }
+
+            longitude_gps_array [i] = longitude_gps;
+            latitude_gps_array [i] = latitude_gps;
+
+            try{
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(int i=0;i<arraySize;i++){
+            longitude_gps_sum = longitude_gps_sum + longitude_gps_array [i];
+            latitude_gps_sum = latitude_gps_sum + latitude_gps_array [i];
+        }
+
+        longitude_gps = longitude_gps_sum/arraySize;
+        latitude_gps = latitude_gps_sum/arraySize;
+
+        double [] lon_lat = new double[2];
+        lon_lat [0] = longitude_gps;
+        lon_lat [1] = latitude_gps;
+
+        return lon_lat;
     }
 
     protected double [] getRouterInfo(){
