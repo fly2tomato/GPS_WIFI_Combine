@@ -17,7 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
 import java.util.List;
+
+import static java.lang.Math.round;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -133,9 +136,9 @@ public class MainActivity extends ActionBarActivity {
                             public void run() {
                                 gpsAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForGPS.setVisibility(View.GONE);
-                                Longitude.setText(Double.toString(longitude_gps_average));
-                                Latitude.setText(Double.toString(latitude_gps_average));
-                                Accuracy.setText(Double.toString(accuracy_gps_average));
+                                Longitude.setText(Double.toString(round(longitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN)));
+                                Latitude.setText(Double.toString(round(latitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN)));
+                                Accuracy.setText(Double.toString(round(accuracy_gps_average, 8, BigDecimal.ROUND_HALF_DOWN)));
                             }
                         });
                     }
@@ -246,13 +249,21 @@ public class MainActivity extends ActionBarActivity {
                 kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps, x_wifi_array,y_wifi_array ,accuracy_gps,accuracy_wifi);
                 final double X = KF.kalman_Filter_Process_X();
                 final double Y = KF.kalman_Filter_Process_Y();
-                Longitude_KF.setText(Double.toString(X));
-                Latitude_KF.setText(Double.toString(Y));
+                Longitude_KF.setText(Double.toString(round(X, 8, BigDecimal.ROUND_HALF_DOWN)));
+                Latitude_KF.setText(Double.toString(round(Y, 8, BigDecimal.ROUND_HALF_DOWN)));
 
 
             }
         });
 
+    }
+
+    private double round(double value, int scale, int roundingMode) {
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(scale,roundingMode);
+        double d = bd.doubleValue();
+        bd = null;
+        return d;
     }
 
     private double [] getGpsInfo() {

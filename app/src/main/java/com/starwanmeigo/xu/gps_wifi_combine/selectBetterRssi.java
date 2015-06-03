@@ -129,12 +129,12 @@ public class selectBetterRssi {
         double f1_max_half = 1/sqrt(2*Math.PI*var1)/2;
         double f2_max_half = 1/sqrt(2*Math.PI*var2)/2;
         double f3_max_half = 1/sqrt(2*Math.PI*var3)/2;
-        /*//select better Rssi from AP1
+        //select better Rssi from AP1
         double count1 = 0;
         for (int x=0; x<arraySize;x++){
             double index1 = -pow(collectedRssi1[x]-u1,2)/(2*var1);
             F1[x] = 1/(sqrt(2*Math.PI*var1))*Math.exp(index1);
-            if(F1[x]>=possibility){
+            if(F1[x]>=f1_max_half){
                 Rssi1_better[x] = collectedRssi1[x];
                 count1++;
             }
@@ -142,10 +142,10 @@ public class selectBetterRssi {
         for(int i=0;i<Rssi1_better.length;i++){
             bestRssi1_sum += Rssi1_better [i];
         }
-        bestRssi1 =bestRssi1_sum/count1;*/
+        bestRssi1 =bestRssi1_sum/count1;
+
         //select better Rssi from AP2
         double count2 = 0;
-
         for (int x=0; x<arraySize;x++){
             double index2 = -pow(collectedRssi2[x]-u2,2)/(2*var2);
             F2[x] = 1/(sqrt(2*Math.PI*var2))*Math.exp(index2);
@@ -158,6 +158,7 @@ public class selectBetterRssi {
             bestRssi2_sum += Rssi2_better [i];
         }
         bestRssi2 =bestRssi2_sum/count2;
+
         //select better Rssi from AP3
         double count3 = 0;
         for (int x=0; x<arraySize;x++){
@@ -172,7 +173,8 @@ public class selectBetterRssi {
             bestRssi3_sum += Rssi3_better [i];
         }
         bestRssi3 =bestRssi3_sum/count3;
-        /*bestRssi[0] = bestRssi1;*/
+
+        bestRssi[0] = bestRssi1;
         bestRssi[1] = bestRssi2;
         bestRssi[2] = bestRssi3;
         return bestRssi;
