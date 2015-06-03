@@ -2,25 +2,22 @@ package com.starwanmeigo.xu.gps_wifi_combine;
 
 import android.content.Context;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+/*import com.google.android.gms.maps.model.LatLng;*/
+
 import java.math.BigDecimal;
 import java.util.List;
-
-import static java.lang.Math.round;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -38,6 +35,9 @@ public class MainActivity extends ActionBarActivity {
     private double longitude_gps_average = 0;
     private double latitude_gps_average = 0;
     private double accuracy_gps_average = 0;
+    private double longitude_gps_average_8 = 0;
+    private double latitude_gps_average_8 = 0;
+    private double accuracy_gps_average_8 = 0;
     private double speed_gps = 0;
     private double bearing_gps = 0;
     private double accuracy_gps = 0;
@@ -131,14 +131,18 @@ public class MainActivity extends ActionBarActivity {
                         longitude_gps_average = longitude_gps_sum/gps_size;
                         latitude_gps_average = latitude_gps_sum/gps_size;
                         accuracy_gps_average = accuracy_gps_sum/gps_size;
+                        longitude_gps_average_8 = round(longitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
+                        latitude_gps_average_8 = round(latitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
+                        accuracy_gps_average_8 = round(accuracy_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
+                        LagLng initLocation = new LagLng (51,13);
                         gpsAP.post(new Runnable() {
                             @Override
                             public void run() {
                                 gpsAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForGPS.setVisibility(View.GONE);
-                                Longitude.setText(Double.toString(round(longitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN)));
-                                Latitude.setText(Double.toString(round(latitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN)));
-                                Accuracy.setText(Double.toString(round(accuracy_gps_average, 8, BigDecimal.ROUND_HALF_DOWN)));
+                                Longitude.setText(Double.toString(longitude_gps_average_8));
+                                Latitude.setText(Double.toString(latitude_gps_average_8));
+                                Accuracy.setText(Double.toString(accuracy_gps_average_8));
                             }
                         });
                     }
@@ -210,6 +214,7 @@ public class MainActivity extends ActionBarActivity {
                             CalcLocation calclocation = new CalcLocation(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
                             final double XFloat = calclocation.getLocationX();
                             final double YFloat = calclocation.getLocationY();
+
                             x_wifi_array [count] = XFloat;
                             y_wifi_array [count] = YFloat;
                         }
@@ -218,16 +223,16 @@ public class MainActivity extends ActionBarActivity {
                             public void run() {
                                 wifiAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForWifi.setVisibility(View.GONE);
-                                X1_WIFI.setText(Double.toString(x_wifi_array[0]));
-                                X2_WIFI.setText(Double.toString(x_wifi_array[1]));
-                                X3_WIFI.setText(Double.toString(x_wifi_array[2]));
-                                X4_WIFI.setText(Double.toString(x_wifi_array[3]));
-                                X5_WIFI.setText(Double.toString(x_wifi_array[4]));
-                                Y1_WIFI.setText(Double.toString(y_wifi_array[0]));
-                                Y2_WIFI.setText(Double.toString(y_wifi_array[1]));
-                                Y3_WIFI.setText(Double.toString(y_wifi_array[2]));
-                                Y4_WIFI.setText(Double.toString(y_wifi_array[3]));
-                                Y5_WIFI.setText(Double.toString(y_wifi_array[4]));
+                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X2_WIFI.setText(Double.toString(round(x_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X3_WIFI.setText(Double.toString(round(x_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X4_WIFI.setText(Double.toString(round(x_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X5_WIFI.setText(Double.toString(round(x_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN)));
+                                Y1_WIFI.setText(Double.toString(round(y_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN)));
+                                Y2_WIFI.setText(Double.toString(round(y_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN)));
+                                Y3_WIFI.setText(Double.toString(round(y_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN)));
+                                Y4_WIFI.setText(Double.toString(round(y_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN)));
+                                Y5_WIFI.setText(Double.toString(round(y_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN)));
                             }
                         });
                     }
@@ -331,7 +336,33 @@ public class MainActivity extends ActionBarActivity {
 
         return level_;
     }
+}
+
+public class convertCartesianToLonLat {
 
 
+    public LatLng getDestinationPoint(LatLng initLocation, float bearing, float depth)
+    {
+        LatLng newLocation;
 
+        double radius = 6371.0; // earth's mean radius in km
+        double lat1 = Math.toRadians(initLocation.latitude);//initial point by Latitude
+        double lng1 = Math.toRadians(initLocation.longitude);//initial point by Longitude
+        double brng = Math.toRadians(bearing);//angle to the unknown target point??
+        double lat2 = Math.asin( Math.sin(lat1)*Math.cos(0.001*depth/radius) + Math.cos(lat1)*Math.sin(0.001*depth/radius)*Math.cos(brng) );
+        double lng2 = lng1 + Math.atan2(Math.sin(brng)*Math.sin(0.001*depth/radius)*Math.cos(lat1), Math.cos(0.001*depth/radius)-Math.sin(lat1)*Math.sin(lat2));
+        lng2 = (lng2+Math.PI)%(2*Math.PI) - Math.PI;
+
+        // normalize to -180...+180
+        if (lat2 == 0 || lng2 == 0)
+        {
+            newLocation = new LatLng(0.0,0.0);
+        }
+        else
+        {
+            newLocation = new LatLng(Math.toDegrees(lat2), Math.toDegrees(lng2));
+        }
+
+        return newLocation;
+    };
 }
