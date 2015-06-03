@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-/*import com.google.android.gms.maps.model.LatLng;*/
+import com.google.android.gms.maps.model.LatLng;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
     // 定义LocationManager对象
-    private final String LOCATION_VALUE = "locationValue";
+    /*private final String LOCATION_VALUE = "locationValue";*/
     private int gps_size =25;
     private LocationManager locationManager;
     //private MainActivity mActivity;
@@ -60,6 +60,8 @@ public class MainActivity extends ActionBarActivity {
     private double y_wifi = 0;
     private double [] x_wifi_array = new double[arraySize];
     private double [] y_wifi_array = new double[arraySize];
+    private double [] cartesian_to_latitude = new double[arraySize];
+    private double [] cartesian_to_longitude = new double[arraySize];
     private double x_wifi_array_sum = 0;
     private double y_wifi_array_sum = 0;
     private double x_wifi_array_average = 0;
@@ -70,6 +72,8 @@ public class MainActivity extends ActionBarActivity {
 
     private double longitude_kf = 0;
     private double latitude_kf = 0;
+    private double [] bearing = new double[arraySize];
+    private double [] distance = new double[arraySize];
 
 
     @Override
@@ -134,7 +138,7 @@ public class MainActivity extends ActionBarActivity {
                         longitude_gps_average_8 = round(longitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
                         latitude_gps_average_8 = round(latitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
                         accuracy_gps_average_8 = round(accuracy_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
-                        LagLng initLocation = new LagLng (51,13);
+
                         gpsAP.post(new Runnable() {
                             @Override
                             public void run() {
@@ -217,13 +221,21 @@ public class MainActivity extends ActionBarActivity {
 
                             x_wifi_array [count] = XFloat;
                             y_wifi_array [count] = YFloat;
+
+                            //we should convert Cartesian To Lon and Lat here!
+                            distance [count] = Math.sqrt(XFloat*XFloat-YFloat*YFloat);
+                            bearing [count] = Math.acos(XFloat/distance[count]);
+                            LatLng initLocation = new LatLng(51, 13);//get the data by checking google map
+                            convertCartesianToLonLat newLonLat = new convertCartesianToLonLat(initLocation, bearing[count], distance[count]);
+                            cartesian_to_latitude [count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).latitude;
+                            cartesian_to_longitude [count] = newLonLat.getDestinationPoint(initLocation,bearing[count], distance[count]).longitude;
                         }
                         wifiAP.post(new Runnable() {
                             @Override
                             public void run() {
                                 wifiAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForWifi.setVisibility(View.GONE);
-                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X1_WIFI.setText(Double.toString(round([0],8,BigDecimal.ROUND_HALF_DOWN)));
                                 X2_WIFI.setText(Double.toString(round(x_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN)));
                                 X3_WIFI.setText(Double.toString(round(x_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN)));
                                 X4_WIFI.setText(Double.toString(round(x_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN)));
@@ -245,13 +257,17 @@ public class MainActivity extends ActionBarActivity {
                 //calculate the Longitude and Latitude with Kalman Filter
                 //we should convert Cartesian To Lon and Lat here!
 
+
+
                 //
                 longitude_gps = longitude_gps_average;
                 latitude_gps = latitude_gps_average;
                 accuracy_gps = accuracy_gps_average;
+/*
                 y_wifi_array = new double[]{51, 53, 54, 50, 52};
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};
-                kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps, x_wifi_array,y_wifi_array ,accuracy_gps,accuracy_wifi);
+*/
+                kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps, cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
                 final double X = KF.kalman_Filter_Process_X();
                 final double Y = KF.kalman_Filter_Process_Y();
                 Longitude_KF.setText(Double.toString(round(X, 8, BigDecimal.ROUND_HALF_DOWN)));
@@ -338,31 +354,4 @@ public class MainActivity extends ActionBarActivity {
     }
 }
 
-public class convertCartesianToLonLat {
 
-
-    public LatLng getDestinationPoint(LatLng initLocation, float bearing, float depth)
-    {
-        LatLng newLocation;
-
-        double radius = 6371.0; // earth's mean radius in km
-        double lat1 = Math.toRadians(initLocation.latitude);//initial point by Latitude
-        double lng1 = Math.toRadians(initLocation.longitude);//initial point by Longitude
-        double brng = Math.toRadians(bearing);//angle to the unknown target point??
-        double lat2 = Math.asin( Math.sin(lat1)*Math.cos(0.001*depth/radius) + Math.cos(lat1)*Math.sin(0.001*depth/radius)*Math.cos(brng) );
-        double lng2 = lng1 + Math.atan2(Math.sin(brng)*Math.sin(0.001*depth/radius)*Math.cos(lat1), Math.cos(0.001*depth/radius)-Math.sin(lat1)*Math.sin(lat2));
-        lng2 = (lng2+Math.PI)%(2*Math.PI) - Math.PI;
-
-        // normalize to -180...+180
-        if (lat2 == 0 || lng2 == 0)
-        {
-            newLocation = new LatLng(0.0,0.0);
-        }
-        else
-        {
-            newLocation = new LatLng(Math.toDegrees(lat2), Math.toDegrees(lng2));
-        }
-
-        return newLocation;
-    };
-}
