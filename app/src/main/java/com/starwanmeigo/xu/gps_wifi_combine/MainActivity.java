@@ -224,18 +224,19 @@ public class MainActivity extends ActionBarActivity {
 
                             //we should convert Cartesian To Lon and Lat here!
                             distance [count] = Math.sqrt(XFloat*XFloat-YFloat*YFloat);
-                            bearing [count] = Math.acos(XFloat/distance[count]);
-                            LatLng initLocation = new LatLng(51, 13);//get the data by checking google map
+                            bearing [count] = Math.atan2(YFloat,XFloat);
+                            LatLng initLocation = new LatLng(51.0270068, 13.7243968);//this is the original point and we get the data by checking google map
                             convertCartesianToLonLat newLonLat = new convertCartesianToLonLat(initLocation, bearing[count], distance[count]);
                             cartesian_to_latitude [count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).latitude;
                             cartesian_to_longitude [count] = newLonLat.getDestinationPoint(initLocation,bearing[count], distance[count]).longitude;
                         }
+
                         wifiAP.post(new Runnable() {
                             @Override
                             public void run() {
                                 wifiAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForWifi.setVisibility(View.GONE);
-                                X1_WIFI.setText(Double.toString(round([0],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN)));
                                 X2_WIFI.setText(Double.toString(round(x_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN)));
                                 X3_WIFI.setText(Double.toString(round(x_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN)));
                                 X4_WIFI.setText(Double.toString(round(x_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN)));
@@ -304,9 +305,9 @@ public class MainActivity extends ActionBarActivity {
             Log.d("bearing","bearing:"+bearing_gps);
             Log.d("accuracy","accuracy:"+accuracy_gps);
         }else {
-            longitude_gps = Double.parseDouble(null);
-            latitude_gps = Double.parseDouble(null);
-            accuracy_gps = Double.parseDouble(null);
+            longitude_gps = 0.0;
+            latitude_gps = 0.0;
+            accuracy_gps = 0.0;
         }
         return new double[]{longitude_gps, latitude_gps, accuracy_gps};
     }
