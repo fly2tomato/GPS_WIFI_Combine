@@ -48,13 +48,13 @@ public class MainActivity extends ActionBarActivity {
 
     //set coordinates of routers
     double ap1_x = 0;
-    double ap1_y = 0.60;
-    double ap2_x = 3.15;
-    double ap2_y = 2.50;
-    double ap3_x = 5.65;
-    double ap3_y = 1.30;
-    //collect 20 data
-    private int arraySize = 50;
+    double ap1_y = 4.1868;
+    double ap2_x = 2.5916;
+    double ap2_y = 6.8637;
+    double ap3_x = 5.0574;
+    double ap3_y = 4.1868;
+    //collect 50 data
+    private int arraySize = 20;
     private int countNumber = 5;
     private double x_wifi = 0;
     private double y_wifi = 0;
@@ -268,7 +268,7 @@ public class MainActivity extends ActionBarActivity {
                 y_wifi_array = new double[]{51, 53, 54, 50, 52};
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};
 */
-                kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps, cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
+                kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
                 final double X = KF.kalman_Filter_Process_X();
                 final double Y = KF.kalman_Filter_Process_Y();
                 Longitude_KF.setText(Double.toString(round(X, 8, BigDecimal.ROUND_HALF_DOWN)));

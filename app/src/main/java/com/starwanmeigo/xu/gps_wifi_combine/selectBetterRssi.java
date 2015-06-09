@@ -7,7 +7,7 @@ import static java.lang.StrictMath.sqrt;
  * Created by xu on 05.05.15.
  */
 public class selectBetterRssi {
-    int arraySize = 50;
+    int arraySize = 20;
     /*double possibility = 0.03;*/
     double[] collectedRssi1 = new double[arraySize];
     double[] collectedRssi2 = new double[arraySize];
