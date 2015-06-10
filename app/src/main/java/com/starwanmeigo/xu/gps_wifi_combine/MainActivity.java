@@ -1,6 +1,7 @@
 package com.starwanmeigo.xu.gps_wifi_combine;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
@@ -54,7 +55,7 @@ public class MainActivity extends ActionBarActivity {
     double ap3_x = 5.0574;
     double ap3_y = 4.1868;
     //collect 50 data
-    private int arraySize = 20;
+        private int arraySize = 20;
     private int countNumber = 5;
     private double x_wifi = 0;
     private double y_wifi = 0;
@@ -80,6 +81,7 @@ public class MainActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final String LOCATION_VALUE = "locationValue";
         final LinearLayout gpsAP = (LinearLayout) findViewById(R.id.gpsAP);
         final LinearLayout wifiAP = (LinearLayout) findViewById(R.id.wifiAP);
         final LinearLayout kfAP = (LinearLayout) findViewById(R.id.kfAP);
@@ -98,10 +100,13 @@ public class MainActivity extends ActionBarActivity {
         final TextView Y4_WIFI = (TextView) findViewById(R.id.wifi_y4);
         final TextView X5_WIFI = (TextView) findViewById(R.id.wifi_x5);
         final TextView Y5_WIFI = (TextView) findViewById(R.id.wifi_y5);
+        final TextView CartTOLat = (TextView) findViewById(R.id.cartesian_to_latitude);
+        final TextView CartToLng = (TextView) findViewById(R.id.cartesian_to_longitude);
         final TextView Longitude_KF = (TextView) findViewById(R.id.kf_longitude);
         final TextView Latitude_KF = (TextView) findViewById(R.id.kf_latitude);
         Button startBtn = (Button) findViewById(R.id.startbtn);
         Button calcBtn = (Button) findViewById(R.id.calcbtn);
+        Button gooMap = (Button) findViewById(R.id.googleMap);
 
 
         startBtn.setOnClickListener(new View.OnClickListener() {
@@ -223,7 +228,7 @@ public class MainActivity extends ActionBarActivity {
                             y_wifi_array [count] = YFloat;
 
                             //we should convert Cartesian To Lon and Lat here!
-                            distance [count] = Math.sqrt(XFloat*XFloat-YFloat*YFloat);
+                            distance [count] = Math.sqrt(Math.abs(XFloat*XFloat+YFloat*YFloat));
                             bearing [count] = Math.atan2(YFloat,XFloat);
                             LatLng initLocation = new LatLng(51.0270068, 13.7243968);//this is the original point and we get the data by checking google map
                             convertCartesianToLonLat newLonLat = new convertCartesianToLonLat(initLocation, bearing[count], distance[count]);
@@ -236,16 +241,16 @@ public class MainActivity extends ActionBarActivity {
                             public void run() {
                                 wifiAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForWifi.setVisibility(View.GONE);
-                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN)));
-                                X2_WIFI.setText(Double.toString(round(x_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN)));
-                                X3_WIFI.setText(Double.toString(round(x_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN)));
-                                X4_WIFI.setText(Double.toString(round(x_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN)));
-                                X5_WIFI.setText(Double.toString(round(x_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN)));
-                                Y1_WIFI.setText(Double.toString(round(y_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN)));
-                                Y2_WIFI.setText(Double.toString(round(y_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN)));
-                                Y3_WIFI.setText(Double.toString(round(y_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN)));
-                                Y4_WIFI.setText(Double.toString(round(y_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN)));
-                                Y5_WIFI.setText(Double.toString(round(y_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN)));
+                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[0]);
+                                X2_WIFI.setText(Double.toString(round(x_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[1]);
+                                X3_WIFI.setText(Double.toString(round(x_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[2]);
+                                X4_WIFI.setText(Double.toString(round(x_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[3]);
+                                X5_WIFI.setText(Double.toString(round(x_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[4]);
+                                Y1_WIFI.setText(Double.toString(round(y_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[0]);
+                                Y2_WIFI.setText(Double.toString(round(y_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[1]);
+                                Y3_WIFI.setText(Double.toString(round(y_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[2]);
+                                Y4_WIFI.setText(Double.toString(round(y_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[3]);
+                                Y5_WIFI.setText(Double.toString(round(y_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[4]);
                             }
                         });
                     }
@@ -275,6 +280,19 @@ public class MainActivity extends ActionBarActivity {
                 Latitude_KF.setText(Double.toString(round(Y, 8, BigDecimal.ROUND_HALF_DOWN)));
 
 
+            }
+        });
+
+        gooMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //向下一个Activity传递数据(使用Intent.putExtras)
+                //putExtra("A",B)中，AB为键值对，第一个参数为键名，第二个参数为键对应的值。
+                // 顺便提一下，如果想取出Intent对象中的这些值，需要在你的另一个Activity中用getXXXXXExtra方法，
+                // 注意需要使用对应类型的方法，参数为键名
+                Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                intent.putExtra(LOCATION_VALUE, mCurrentLocation);
+                startActivity(intent);
             }
         });
 
