@@ -14,8 +14,8 @@ public class CalcDistance {
     double rssi1;
     double rssi2;
     double rssi3;
-    double A = 39;
-    double n = 3.01;
+    double A = 34.04;
+    double n = 2.606;
     double distance [] = new double[3];
 
     public CalcDistance(double strongestLevel1, double strongestLevel2, double strongestLevel3){

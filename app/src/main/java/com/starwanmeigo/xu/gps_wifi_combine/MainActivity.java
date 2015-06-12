@@ -28,6 +28,7 @@ public class MainActivity extends ActionBarActivity {
     private LocationManager locationManager;
     //private MainActivity mActivity;
     private Location mCurrentLocation;
+    private LatLng newCurrentLocation;
     private double longitude_gps = 0;
     private double latitude_gps = 0;
     private double longitude_gps_sum = 0;
@@ -274,10 +275,10 @@ public class MainActivity extends ActionBarActivity {
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};
 */
                 kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
-                final double X = KF.kalman_Filter_Process_X();
-                final double Y = KF.kalman_Filter_Process_Y();
-                Longitude_KF.setText(Double.toString(round(X, 8, BigDecimal.ROUND_HALF_DOWN)));
-                Latitude_KF.setText(Double.toString(round(Y, 8, BigDecimal.ROUND_HALF_DOWN)));
+                latitude_kf = KF.kalman_Filter_Process_X();
+                longitude_kf = KF.kalman_Filter_Process_Y();
+                Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
 
 
             }
@@ -290,8 +291,11 @@ public class MainActivity extends ActionBarActivity {
                 //putExtra("A",B)中，AB为键值对，第一个参数为键名，第二个参数为键对应的值。
                 // 顺便提一下，如果想取出Intent对象中的这些值，需要在你的另一个Activity中用getXXXXXExtra方法，
                 // 注意需要使用对应类型的方法，参数为键名
+                double gooLatLng [] = new double[2];
+                gooLatLng [0] = latitude_kf;
+                gooLatLng [1] = longitude_kf;
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                intent.putExtra(LOCATION_VALUE, mCurrentLocation);
+                intent.putExtra(LOCATION_VALUE, gooLatLng);
                 startActivity(intent);
             }
         });
