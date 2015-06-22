@@ -167,4 +167,7 @@ public class CalcLocation {
         double y_average = (y_a+y_b+y_c)/3;
         return y_average;
     }
+
 }
+
+
