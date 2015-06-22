@@ -2,6 +2,8 @@ package com.starwanmeigo.xu.gps_wifi_combine;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
@@ -18,6 +20,8 @@ import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -29,6 +33,7 @@ public class MainActivity extends ActionBarActivity {
     //private MainActivity mActivity;
     private Location mCurrentLocation;
     private LatLng newCurrentLocation;
+    private int countSateNum=0;
     private double longitude_gps = 0;
     private double latitude_gps = 0;
     private double longitude_gps_sum = 0;
@@ -88,6 +93,7 @@ public class MainActivity extends ActionBarActivity {
         final LinearLayout kfAP = (LinearLayout) findViewById(R.id.kfAP);
         final ProgressBar loadingSpinnerForGPS = (ProgressBar) findViewById(R.id.loadingSpinnerForGPS);
         final ProgressBar loadingSpinnerForWifi = (ProgressBar) findViewById(R.id.loadingSpinnerForWifi);
+        final TextView sateNum = (TextView) findViewById(R.id.satellitesnumber);
         final TextView Longitude = (TextView) findViewById(R.id.gps_longitude);
         final TextView Latitude = (TextView) findViewById(R.id.gps_latitude);
         final TextView Accuracy = (TextView) findViewById(R.id.gps_accuracy);
@@ -128,6 +134,7 @@ public class MainActivity extends ActionBarActivity {
                             longitude_gps_array [i] = gpsSignals[0];
                             latitude_gps_array [i] = gpsSignals[1];
                             accuracy_gps_array [i] = gpsSignals [2];
+                            countSateNum = (int) gpsSignals [3];
                             longitude_gps_sum += longitude_gps_array[i];
                             latitude_gps_sum += latitude_gps_array[i];
                             accuracy_gps_sum += accuracy_gps_array[i];
@@ -148,8 +155,10 @@ public class MainActivity extends ActionBarActivity {
                         gpsAP.post(new Runnable() {
                             @Override
                             public void run() {
+
                                 gpsAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForGPS.setVisibility(View.GONE);
+                                sateNum.setText(Integer.toString(countSateNum));
                                 Longitude.setText(Double.toString(longitude_gps_average_8));
                                 Latitude.setText(Double.toString(latitude_gps_average_8));
                                 Accuracy.setText(Double.toString(accuracy_gps_average_8));
@@ -262,11 +271,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 //calculate the Longitude and Latitude with Kalman Filter
-                //we should convert Cartesian To Lon and Lat here!
 
-
-
-                //
                 longitude_gps = longitude_gps_average;
                 latitude_gps = latitude_gps_average;
                 accuracy_gps = accuracy_gps_average;
@@ -294,8 +299,9 @@ public class MainActivity extends ActionBarActivity {
                 double gooLatLng [] = new double[2];
                 gooLatLng [0] = latitude_kf;
                 gooLatLng [1] = longitude_kf;
+                LatLng latLng = new LatLng(gooLatLng[0],gooLatLng[1]);
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                intent.putExtra(LOCATION_VALUE, gooLatLng);
+                intent.putExtra(LOCATION_VALUE, latLng);
                 startActivity(intent);
             }
         });
@@ -315,6 +321,23 @@ public class MainActivity extends ActionBarActivity {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         // 从GPS获取最近的定位信息
         mCurrentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        GpsStatus gpsStatus = locationManager.getGpsStatus(null);
+        //获取默认最大卫星数
+        int maxSatellites = gpsStatus.getMaxSatellites();
+        //获取卫星
+        Iterable<GpsSatellite> iterable=gpsStatus.getSatellites();
+        //再次转换成Iterator
+        Iterator<GpsSatellite> itrator=iterable.iterator();
+        //通过遍历重新整理为ArrayList
+        ArrayList<GpsSatellite> satelliteList=new ArrayList<GpsSatellite>();
+        //count the number of available satellites as countSateNum
+
+        maxSatellites = gpsStatus.getMaxSatellites();
+        while (itrator.hasNext() && countSateNum <= maxSatellites) {
+            GpsSatellite satellite = itrator.next();
+            satelliteList.add(satellite);
+            countSateNum++;
+        }
         if(mCurrentLocation != null){
             longitude_gps = mCurrentLocation.getLongitude();
             latitude_gps = mCurrentLocation.getLatitude();
@@ -331,7 +354,7 @@ public class MainActivity extends ActionBarActivity {
             latitude_gps = 0.0;
             accuracy_gps = 0.0;
         }
-        return new double[]{longitude_gps, latitude_gps, accuracy_gps};
+        return new double[]{longitude_gps, latitude_gps, accuracy_gps, countSateNum};
     }
 
 
