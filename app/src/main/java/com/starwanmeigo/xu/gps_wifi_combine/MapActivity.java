@@ -17,6 +17,7 @@ public class MapActivity extends ActionBarActivity {
 
     private final String LOCATION_VALUE = "locationValue";
     private double[] gooLatLng = new double[2];
+    private LatLng latLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,12 +25,17 @@ public class MapActivity extends ActionBarActivity {
         //
         setContentView(R.layout.activity_map);
         //取出Intent中附加的数据
-        gooLatLng = (double[]) getIntent().getExtras().get(LOCATION_VALUE);
+
+        latLng =  getIntent().getExtras().getParcelable(LOCATION_VALUE);
+        gooLatLng[0] = latLng.latitude;
+        gooLatLng[1] = latLng.longitude;
+        LatLng currentLatLng = new LatLng(gooLatLng[0],gooLatLng[1]);
+
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         GoogleMap googleMap = mapFragment.getMap();
         googleMap.setMyLocationEnabled(true);
 
-        LatLng currentLatLng = new LatLng(gooLatLng[0],gooLatLng[1]);
+
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 20));
 
         // add marker
