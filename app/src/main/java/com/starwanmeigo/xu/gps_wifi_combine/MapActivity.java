@@ -29,7 +29,7 @@ public class MapActivity extends ActionBarActivity {
         latLng =  getIntent().getExtras().getParcelable(LOCATION_VALUE);
         gooLatLng[0] = latLng.latitude;
         gooLatLng[1] = latLng.longitude;
-        LatLng currentLatLng = new LatLng(gooLatLng[0],gooLatLng[1]);
+        LatLng currentLatLng = new LatLng(gooLatLng[1],gooLatLng[0]);
 
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         GoogleMap googleMap = mapFragment.getMap();

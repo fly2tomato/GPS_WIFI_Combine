@@ -229,8 +229,9 @@ public class MainActivity extends ActionBarActivity {
                             double D_1Float =  D_Float_ [0];
                             double D_2Float =  D_Float_ [1];
                             double D_3Float =  D_Float_ [2];
+
                             //calc the Location
-                            CalcLocation calclocation = new CalcLocation(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
+                            calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
                             final double XFloat = calclocation.getLocationX();
                             final double YFloat = calclocation.getLocationY();
 
@@ -240,7 +241,7 @@ public class MainActivity extends ActionBarActivity {
                             //we should convert Cartesian To Lon and Lat here!
                             distance [count] = Math.sqrt(Math.abs(XFloat*XFloat+YFloat*YFloat));
                             bearing [count] = Math.atan2(YFloat,XFloat);
-                            LatLng initLocation = new LatLng(51.0270068, 13.7243968);//this is the original point and we get the data by checking google map
+                            LatLng initLocation = new LatLng(51.0270068, 13.7243968);//this is the original point and we get this data by checking google map
                             convertCartesianToLonLat newLonLat = new convertCartesianToLonLat(initLocation, bearing[count], distance[count]);
                             cartesian_to_latitude [count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).latitude;
                             cartesian_to_longitude [count] = newLonLat.getDestinationPoint(initLocation,bearing[count], distance[count]).longitude;
@@ -275,10 +276,8 @@ public class MainActivity extends ActionBarActivity {
                 longitude_gps = longitude_gps_average;
                 latitude_gps = latitude_gps_average;
                 accuracy_gps = accuracy_gps_average;
-/*
-                y_wifi_array = new double[]{51, 53, 54, 50, 52};
-                x_wifi_array = new double[]{11, 14 ,15 ,13, 16};
-*/
+                /*y_wifi_array = new double[]{51, 53, 54, 50, 52};
+                x_wifi_array = new double[]{11, 14 ,15 ,13, 16};*/
                 kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
                 latitude_kf = KF.kalman_Filter_Process_X();
                 longitude_kf = KF.kalman_Filter_Process_Y();
@@ -321,6 +320,7 @@ public class MainActivity extends ActionBarActivity {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         // 从GPS获取最近的定位信息
         mCurrentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        //
         GpsStatus gpsStatus = locationManager.getGpsStatus(null);
         //获取默认最大卫星数
         int maxSatellites = gpsStatus.getMaxSatellites();
