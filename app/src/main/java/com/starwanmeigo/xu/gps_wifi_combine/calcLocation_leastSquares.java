@@ -38,11 +38,11 @@ public class calcLocation_leastSquares {
 
     public Matrix getSolve(){
         double [][] array1 = {{2*(x1-x3),2*(y1-y3)},{2*(x2-x3),2*(y2-y3)}};
-        double [][] array2 = {{pow(x1, 2)- pow(x2, 2)+ pow(y1,2)-pow(y3,2)+pow(d3,2)-pow(d1,2)},{pow(x2,2)-pow(x3,2)+pow(y2,2)-pow(y3,2)+pow(d3,2)-pow(d2,2)}};
+        double [][] array2 = {{pow(x1,2)- pow(x3,2)+ pow(y1,2)-pow(y3,2)+pow(d3,2)-pow(d1,2)},{pow(x2,2)-pow(x3,2)+pow(y2,2)-pow(y3,2)+pow(d3,2)-pow(d2,2)}};
         Matrix A = new Matrix(array1);
         Matrix b = new Matrix(array2);
         Matrix X = A.solve(b);
-        Matrix Residual = A.times(x).minus(b);
+        Matrix Residual = A.times(X).minus(b);
         rnorm = Residual.normInf();
 
         return X;

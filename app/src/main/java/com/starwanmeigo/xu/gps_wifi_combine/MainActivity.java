@@ -2,8 +2,6 @@ package com.starwanmeigo.xu.gps_wifi_combine;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
@@ -16,12 +14,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -61,7 +58,7 @@ public class MainActivity extends ActionBarActivity {
     double ap3_x = 5.0574;
     double ap3_y = 4.1868;
     //collect 50 data
-        private int arraySize = 20;
+    private int arraySize = 20;
     private int countNumber = 5;
     private double x_wifi = 0;
     private double y_wifi = 0;
@@ -73,6 +70,10 @@ public class MainActivity extends ActionBarActivity {
     private double y_wifi_array_sum = 0;
     private double x_wifi_array_average = 0;
     private double y_wifi_array_average = 0;
+    double D_1Float = 0;
+    double D_2Float = 0;
+    double D_3Float = 0;
+
 
 
     private double accuracy_wifi = 4;
@@ -93,7 +94,7 @@ public class MainActivity extends ActionBarActivity {
         final LinearLayout kfAP = (LinearLayout) findViewById(R.id.kfAP);
         final ProgressBar loadingSpinnerForGPS = (ProgressBar) findViewById(R.id.loadingSpinnerForGPS);
         final ProgressBar loadingSpinnerForWifi = (ProgressBar) findViewById(R.id.loadingSpinnerForWifi);
-        final TextView sateNum = (TextView) findViewById(R.id.satellitesnumber);
+        /*final TextView sateNum = (TextView) findViewById(R.id.satellitesnumber);*/
         final TextView Longitude = (TextView) findViewById(R.id.gps_longitude);
         final TextView Latitude = (TextView) findViewById(R.id.gps_latitude);
         final TextView Accuracy = (TextView) findViewById(R.id.gps_accuracy);
@@ -158,7 +159,7 @@ public class MainActivity extends ActionBarActivity {
 
                                 gpsAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForGPS.setVisibility(View.GONE);
-                                sateNum.setText(Integer.toString(countSateNum));
+                                /*sateNum.setText(Integer.toString(countSateNum));*/
                                 Longitude.setText(Double.toString(longitude_gps_average_8));
                                 Latitude.setText(Double.toString(latitude_gps_average_8));
                                 Accuracy.setText(Double.toString(accuracy_gps_average_8));
@@ -225,16 +226,26 @@ public class MainActivity extends ActionBarActivity {
 
                             //calc distance with rssi
                             CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
+                            CalcDistance_outside calcDistance_outside = new CalcDistance_outside(bestRssi1, bestRssi2, bestRssi3);
+                            /*if(bestRssi1>= -65||bestRssi2>= -65||bestRssi3 >= -60){
+
+                            }
+                            else{
+
+                            }*/
                             double [] D_Float_ = calcDistance.getDistance();
-                            double D_1Float =  D_Float_ [0];
-                            double D_2Float =  D_Float_ [1];
-                            double D_3Float =  D_Float_ [2];
+                            D_1Float =  D_Float_ [0];
+                            D_2Float =  D_Float_ [1];
+                            D_3Float =  D_Float_ [2];
 
                             //calc the Location
-                            calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
-                            final double XFloat = calclocation.getLocationX();
-                            final double YFloat = calclocation.getLocationY();
-
+                            double XFloat = 0;
+                            double YFloat = 0;
+                            if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
+                                calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
+                                XFloat = calclocation.getLocationX();
+                                YFloat = calclocation.getLocationY();
+                            }
                             x_wifi_array [count] = XFloat;
                             y_wifi_array [count] = YFloat;
 
@@ -278,13 +289,33 @@ public class MainActivity extends ActionBarActivity {
                 accuracy_gps = accuracy_gps_average;
                 /*y_wifi_array = new double[]{51, 53, 54, 50, 52};
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};*/
-                kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
-                latitude_kf = KF.kalman_Filter_Process_X();
-                longitude_kf = KF.kalman_Filter_Process_Y();
-                Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-
-
+                //determine ob longitude and latitude from GPS is null,if null,choose the location information from wifi
+                if (longitude_gps!=0||latitude_gps!=0){
+                    if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
+                        kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
+                        latitude_kf = KF.kalman_Filter_Process_X();
+                        longitude_kf = KF.kalman_Filter_Process_Y();
+                        Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                        Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    }
+                    else{
+                        latitude_kf = latitude_gps;
+                        longitude_kf = longitude_gps;
+                        Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                        Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    }
+                }
+                else if (longitude_gps==0||latitude_gps==0){
+                    if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
+                        latitude_kf = cartesian_to_latitude[0];
+                        longitude_kf = cartesian_to_longitude[0];
+                        Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                        Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    }
+                    else{
+                        Toast.makeText(MainActivity.this,"Not enough Data ",Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
 
@@ -321,7 +352,7 @@ public class MainActivity extends ActionBarActivity {
         // 从GPS获取最近的定位信息
         mCurrentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         //
-        GpsStatus gpsStatus = locationManager.getGpsStatus(null);
+        /*GpsStatus gpsStatus = locationManager.getGpsStatus(null);
         //获取默认最大卫星数
         int maxSatellites = gpsStatus.getMaxSatellites();
         //获取卫星
@@ -333,11 +364,13 @@ public class MainActivity extends ActionBarActivity {
         //count the number of available satellites as countSateNum
 
         maxSatellites = gpsStatus.getMaxSatellites();
+        satelliteList.clear();
         while (itrator.hasNext() && countSateNum <= maxSatellites) {
             GpsSatellite satellite = itrator.next();
             satelliteList.add(satellite);
             countSateNum++;
-        }
+        }*/
+
         if(mCurrentLocation != null){
             longitude_gps = mCurrentLocation.getLongitude();
             latitude_gps = mCurrentLocation.getLatitude();
