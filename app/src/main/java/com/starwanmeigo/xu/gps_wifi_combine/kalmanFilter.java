@@ -58,7 +58,7 @@ public class kalmanFilter {
             KG[i+1] = P[i+1][i]/(sqrt(pow(P[i+1][i],2)+pow(uncertain_wifi_initial,2)));
             X[i+1][i+1] = X[i+1][i]+KG[i+1]*(Z[i+1]-X[i+1][i]);
             P[i+1][i+1] =P[i+1][i]*sqrt(1-KG[i+1]);
-            Log.i("sssssssss:", Double.toString(X[i][i]));
+            Log.i("check the answer:", Double.toString(X[i][i]));
         }
 
         return X[i][i];
@@ -80,7 +80,7 @@ public class kalmanFilter {
             KG[i+1] = P[i+1][i]/(sqrt(pow(P[i+1][i],2)+pow(uncertain_wifi_initial,2)));
             Y[i+1][i+1] = Y[i+1][i]+KG[i+1]*(Z[i+1]-Y[i+1][i]);
             P[i+1][i+1] =P[i+1][i]*sqrt(1-KG[i+1]);
-            Log.i("sssssssss:",Double.toString(Y[i][i]));
+            Log.i("check the answer:",Double.toString(Y[i][i]));
         }
 
         return Y[i][i];

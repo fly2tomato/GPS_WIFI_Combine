@@ -225,18 +225,23 @@ public class MainActivity extends ActionBarActivity {
                             final double bestRssi3 = bestRssi [2];
 
                             //calc distance with rssi
-                            CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
-                            CalcDistance_outside calcDistance_outside = new CalcDistance_outside(bestRssi1, bestRssi2, bestRssi3);
-                            /*if(bestRssi1>= -65||bestRssi2>= -65||bestRssi3 >= -60){
 
+
+                            if(bestRssi1>= -60||bestRssi2>= -60||bestRssi3 >= -60){
+                                CalcDistance_outside calcDistance_outside = new CalcDistance_outside(bestRssi1, bestRssi2, bestRssi3);
+                                double [] D_Float_ = calcDistance_outside.getDistance();
+                                D_1Float =  D_Float_ [0];
+                                D_2Float =  D_Float_ [1];
+                                D_3Float =  D_Float_ [2];
                             }
                             else{
+                                CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
+                                double [] D_Float_ = calcDistance.getDistance();
+                                D_1Float =  D_Float_ [0];
+                                D_2Float =  D_Float_ [1];
+                                D_3Float =  D_Float_ [2];
+                            }
 
-                            }*/
-                            double [] D_Float_ = calcDistance.getDistance();
-                            D_1Float =  D_Float_ [0];
-                            D_2Float =  D_Float_ [1];
-                            D_3Float =  D_Float_ [2];
 
                             //calc the Location
                             double XFloat = 0;
