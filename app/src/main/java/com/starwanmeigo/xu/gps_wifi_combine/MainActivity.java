@@ -108,8 +108,6 @@ public class MainActivity extends ActionBarActivity {
         final TextView Y4_WIFI = (TextView) findViewById(R.id.wifi_y4);
         final TextView X5_WIFI = (TextView) findViewById(R.id.wifi_x5);
         final TextView Y5_WIFI = (TextView) findViewById(R.id.wifi_y5);
-        final TextView CartTOLat = (TextView) findViewById(R.id.cartesian_to_latitude);
-        final TextView CartToLng = (TextView) findViewById(R.id.cartesian_to_longitude);
         final TextView Longitude_KF = (TextView) findViewById(R.id.kf_longitude);
         final TextView Latitude_KF = (TextView) findViewById(R.id.kf_latitude);
         Button startBtn = (Button) findViewById(R.id.startbtn);
