@@ -2,13 +2,19 @@ package com.starwanmeigo.xu.gps_wifi_combine;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
+import android.text.format.Time;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -19,12 +25,16 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
     // 定义LocationManager对象
-    /*private final String LOCATION_VALUE = "locationValue";*/
+    final String LOCATION_VALUE = "locationValue";
+    final String LOCATION_VALUE_2 = "locationValue_2";
+    final String LOCATION_VALUE_3 = "locationValue_3";
     private int gps_size =25;
     private LocationManager locationManager;
     //private MainActivity mActivity;
@@ -49,6 +59,9 @@ public class MainActivity extends ActionBarActivity {
     private double [] latitude_gps_array = new double[gps_size];
     private double [] accuracy_gps_array = new double[gps_size];
     private double [] gpsSignals = new double[gps_size];
+    private double latitude_intime = 0;
+    private double longitude_intime = 0;
+
 
     //set coordinates of routers
     double ap1_x = 0;
@@ -84,11 +97,16 @@ public class MainActivity extends ActionBarActivity {
     private double [] distance = new double[arraySize];
 
 
+    private String nmeaString = null;
+    private String gpggaString = null;
+    private double amountOfSatInUsed = 0.0;
+    private double hdop = 0.0;
+    private double signalQuality = 0.0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final String LOCATION_VALUE = "locationValue";
         final LinearLayout gpsAP = (LinearLayout) findViewById(R.id.gpsAP);
         final LinearLayout wifiAP = (LinearLayout) findViewById(R.id.wifiAP);
         final LinearLayout kfAP = (LinearLayout) findViewById(R.id.kfAP);
@@ -114,7 +132,7 @@ public class MainActivity extends ActionBarActivity {
         Button calcBtn = (Button) findViewById(R.id.calcbtn);
         Button gooMap = (Button) findViewById(R.id.googleMap);
 
-
+        openGPSSettings();
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,6 +146,7 @@ public class MainActivity extends ActionBarActivity {
                                 loadingSpinnerForGPS.setVisibility(View.VISIBLE);
                             }
                         });
+
                         for(int i =0;i< gps_size;i++){
                             gpsSignals  = getGpsInfo();
                             longitude_gps_array [i] = gpsSignals[0];
@@ -293,11 +312,12 @@ public class MainActivity extends ActionBarActivity {
                 /*y_wifi_array = new double[]{51, 53, 54, 50, 52};
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};*/
                 //determine ob longitude and latitude from GPS is null,if null,choose the location information from wifi
-                if (longitude_gps!=0||latitude_gps!=0){
+                //if we receive data from gps
+                if (sateNumbers() != 0){
                     if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
                         kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
-                        latitude_kf = KF.kalman_Filter_Process_X();
-                        longitude_kf = KF.kalman_Filter_Process_Y();
+                        longitude_kf = KF.kalman_Filter_Process_X();
+                        latitude_kf = KF.kalman_Filter_Process_Y();
                         Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
                         Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
                     }
@@ -308,7 +328,8 @@ public class MainActivity extends ActionBarActivity {
                         Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
                     }
                 }
-                else if (longitude_gps==0||latitude_gps==0){
+                //if we don't receive data from gps
+                else if (sateNumbers() == 0){
                     if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
                         latitude_kf = cartesian_to_latitude[0];
                         longitude_kf = cartesian_to_longitude[0];
@@ -329,12 +350,19 @@ public class MainActivity extends ActionBarActivity {
                 //putExtra("A",B)中，AB为键值对，第一个参数为键名，第二个参数为键对应的值。
                 // 顺便提一下，如果想取出Intent对象中的这些值，需要在你的另一个Activity中用getXXXXXExtra方法，
                 // 注意需要使用对应类型的方法，参数为键名
-                double gooLatLng [] = new double[2];
+                double gooLatLng [] = new double[4];
                 gooLatLng [0] = latitude_kf;
                 gooLatLng [1] = longitude_kf;
+                gooLatLng [2] = cartesian_to_latitude[0];
+                gooLatLng [3] = cartesian_to_longitude[0];
                 LatLng latLng = new LatLng(gooLatLng[0],gooLatLng[1]);
+                LatLng latLng_2 = new LatLng(gooLatLng[2],gooLatLng[3]);
+                LatLng latLng_3 = new LatLng(latitude_intime,longitude_intime);
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
                 intent.putExtra(LOCATION_VALUE, latLng);
+                intent.putExtra(LOCATION_VALUE_2, latLng_2);
+                intent.putExtra(LOCATION_VALUE_3,latLng_3);
+
                 startActivity(intent);
             }
         });
@@ -433,6 +461,182 @@ public class MainActivity extends ActionBarActivity {
         level_ [2] = level_3;
 
         return level_;
+    }
+    private void openGPSSettings() {
+        LocationManager alm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (alm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "GPS模块正常", Toast.LENGTH_SHORT).show();
+            getLocation();
+            return;
+        }
+        else{
+            Toast.makeText(this, "请开启GPS！", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+            startActivityForResult(intent, R.layout.activity_main); // 此为设置完成后返回到获取界面
+            getLocation();
+            return;
+        }
+    }
+
+    private int sateNumbers(){
+        int sateNumbers = numSatelliteList.size();
+        return sateNumbers;
+    }
+
+    //LocationManager locationManager;
+
+    private void getLocation() {
+        // 获取位置管理服务
+
+        String serviceName = Context.LOCATION_SERVICE;
+        locationManager = (LocationManager) this.getSystemService(serviceName);
+        // 查找到服务信息
+        // Criteria criteria = new Criteria();
+        // criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        // // 高精度
+        // criteria.setAltitudeRequired(false);
+        // criteria.setBearingRequired(false);
+        // criteria.setCostAllowed(true);
+        // criteria.setPowerRequirement(Criteria.POWER_LOW);
+        // // 低功耗
+        // String provider = locationManager.getBestProvider(criteria, true);
+        // 获取GPS信息
+        String provider = LocationManager.GPS_PROVIDER;
+
+        Location location = locationManager.getLastKnownLocation(provider);// 通过GPS获取位置
+
+        if (location == null)
+            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        updateToNewLocation(location);
+        // 设置监听器，自动更新的最小时间为间隔N秒(1秒为1*1000)或最小位移变化超过N米
+        locationManager.requestLocationUpdates(provider, 500, 0,locationListener);
+        // 注册状态信息回调
+        locationManager.addGpsStatusListener(statusListener);
+        //
+        locationManager.addNmeaListener(nmealistener);
+    }
+
+    private List<GpsSatellite> numSatelliteList = new ArrayList<GpsSatellite>(); // 卫星信号
+    /**
+     * 卫星状态监听器
+     */
+    private final GpsStatus.Listener statusListener = new GpsStatus.Listener() {
+        public void onGpsStatusChanged(int event) { // GPS状态变化时的回调，如卫星数
+            GpsStatus status = locationManager.getGpsStatus(null); // 取当前状态
+            updateGpsStatus(event, status);
+        }
+    };
+
+
+    private final GpsStatus.NmeaListener nmealistener = new GpsStatus.NmeaListener() {
+        @Override
+        public void onNmeaReceived(long timestamp, String nmea) {
+            nmeaString = nmea;
+                /*Log.d("Tag", "Nmea Received :");*/
+            Log.d("TAG", "Timestamp is :" + timestamp + "   nmea is :" + nmea);
+            String determinString = nmeaString.substring(0,6);
+            String choosedString = "$GPGGA";
+            boolean isEqual = determinString.equals(choosedString);
+            Log.d("TAG","is equal? "+isEqual);
+
+            if(gpggaString == null){
+                if(determinString.equals(choosedString)){
+                    if(nmeaString.length()>30){
+                        gpggaString = nmeaString;
+                        amountOfSatInUsed = Double.valueOf(nmeaString.substring(46,47));
+                        hdop = Double.valueOf(nmeaString.substring(48,51));
+                    }
+                }
+            }
+
+            double amountOfSatInView = 6.0;
+
+            double hdop_intial = 1.5;
+
+            signalQuality = ((amountOfSatInUsed-amountOfSatInView)/amountOfSatInView+(hdop_intial-hdop)/hdop_intial)/2;
+        }
+    };
+
+    private void updateGpsStatus(int event, GpsStatus status) {
+        if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+            int maxSatellites = status.getMaxSatellites();
+            Iterator<GpsSatellite> it = status.getSatellites().iterator();
+            numSatelliteList.clear();
+            int count = 0;
+            while (it.hasNext() && count <= maxSatellites) {
+                GpsSatellite s = it.next();
+                numSatelliteList.add(s);
+                count++;
+            }
+
+        }
+    }
+
+    private void updateToNewLocation(Location location) {
+        // 获取系统时间
+        Time t = new Time();
+        t.setToNow(); // 取得系统时间
+        int year = t.year;
+        int month = t.month + 1;
+        int date = t.monthDay;
+        int hour = t.hour; // 24小时制
+        int minute = t.minute;
+        int second = t.second;
+        TextView tv1;
+        tv1 = (TextView) this.findViewById(R.id.tv1);
+        if (location != null) {
+            latitude_intime = location.getLatitude();// 经度
+            longitude_intime = location.getLongitude();// 纬度
+            double altitude = location.getAltitude(); // 海拔
+            tv1.setText("find " + numSatelliteList.size() + " satellites!" + "\nlatitude："
+                    + latitude_intime + "\nlongitude：" + longitude_intime + "\naltitude：" + altitude
+                    + "\ntime：" + year + "." + month + "." + date + "." + hour
+                    + ":" + minute + ":" + second);
+        } else {
+
+            tv1.setText("无法获取地理信息");
+        }
+    }
+
+
+    private final LocationListener locationListener = new LocationListener() {
+        public void onLocationChanged(Location location) {
+            // 当坐标改变时触发此函数，如果Provider传进相同的坐标，它就不会被触发
+            if (location != null) {
+                updateToNewLocation(location);
+                Toast.makeText(MainActivity.this, "您的位置已发生改变！",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        public void onProviderDisabled(String provider) {
+            // Provider被disable时触发此函数，比如GPS被关闭
+            updateToNewLocation(null);
+        }
+
+        public void onProviderEnabled(String provider) {
+            // Provider被enable时触发此函数，比如GPS被打开
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            // Provider的转态在可用、暂时不可用和无服务三个状态直接切换时触发此函数
+        }
+    };
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_MENU) {// 拦截menu键事件
+            // do something...
+            System.exit(0);
+
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_BACK) {// 拦截返回按钮事件
+            // do something...
+            System.exit(0);
+        }
+        return true;
     }
 }
 
