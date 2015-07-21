@@ -253,16 +253,6 @@ public class MainActivity extends ActionBarActivity {
                             D_1Float =  D_Float_ [0];
                             D_2Float =  D_Float_ [1];
                             D_3Float =  D_Float_ [2];
-                            /*if(bestRssi1>= -60||bestRssi2>= -60||bestRssi3 >= -60){
-                                CalcDistance_outside calcDistance_outside = new CalcDistance_outside(bestRssi1, bestRssi2, bestRssi3);
-                                double [] D_Float_ = calcDistance_outside.getDistance();
-                                D_1Float =  D_Float_ [0];
-                                D_2Float =  D_Float_ [1];
-                                D_3Float =  D_Float_ [2];
-                            }
-                            else{
-
-                            }*/
 
 
                             //calc the Location
@@ -311,16 +301,59 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View v) {
                 //calculate the Longitude and Latitude with Kalman Filter
 
+                //to evaluate the signal quality of GPS and WIFI, during some algorithms the
+                // wifiSignalQuality and gpsSignalQuality will be calculated to accomplish that,
+                //because of the different intervals of each other, we need to let these two SQ in a
+                //same intervall,e.g. [0,1], to do that, we use linear normalise.
+                double wifiSignalQualityNorm = 0.0;
+                double wifiSignalQualityMin = 0.1;
+                double wifiSignalQualityMax = 1.0;
+                double gpsSignalQualityNorm = 0.0;
+                double gpsSignalQualityMin = -0.5;
+                double gpsSignalQualityMax = 0.5;
+                double accuracy_wifi_metric = 0.0;
+                double accuracy_gps_metric = 0.0;
                 longitude_gps = longitude_gps_average;
                 latitude_gps = latitude_gps_average;
                 accuracy_gps = accuracy_gps_average;
+
+                if(wifiSignalQuality != 0 && gpsSignalQuality != 0){
+                    wifiSignalQualityNorm = (wifiSignalQuality-wifiSignalQualityMin)/(wifiSignalQualityMax-wifiSignalQualityMin);
+                    gpsSignalQualityNorm = (gpsSignalQuality-gpsSignalQualityMin)/(gpsSignalQualityMax-gpsSignalQualityMin);
+                    double weightWifi = wifiSignalQualityNorm/(wifiSignalQualityNorm+gpsSignalQualityNorm);
+                    double weightGps = 1-weightWifi;
+                    accuracy_wifi_metric = accuracy_wifi*(1+(0.5-weightWifi));
+                    accuracy_gps_metric = accuracy_gps*(1+(0.5-weightGps));
+                    kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_metric,accuracy_wifi_metric);
+                    longitude_kf = KF.kalman_Filter_Process_X();
+                    latitude_kf = KF.kalman_Filter_Process_Y();
+                    Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                }
+                else if(wifiSignalQuality == 0 && gpsSignalQuality != 0){
+                    latitude_kf = latitude_gps;
+                    longitude_kf = longitude_gps;
+                    Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                }
+                else if(wifiSignalQuality != 0 && gpsSignalQuality == 0){
+                    latitude_kf = cartesian_to_latitude[0];
+                    longitude_kf = cartesian_to_longitude[0];
+                    Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                }
+                else if(wifiSignalQuality == 0 && gpsSignalQuality == 0){
+                    Toast.makeText(MainActivity.this,"Not enough Data to locate! ",Toast.LENGTH_SHORT).show();
+                }
+
+
                 /*y_wifi_array = new double[]{51, 53, 54, 50, 52};
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};*/
                 //determine ob longitude and latitude from GPS is null,if null,choose the location information from wifi
                 //if we receive data from gps
-                if (sateNumbers() != 0){
+                /*if (sateNumbers() != 0){
                     if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
-                        kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_average,accuracy_wifi);
+                        kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_metric,accuracy_wifi_metric);
                         longitude_kf = KF.kalman_Filter_Process_X();
                         latitude_kf = KF.kalman_Filter_Process_Y();
                         Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
@@ -344,7 +377,7 @@ public class MainActivity extends ActionBarActivity {
                     else{
                         Toast.makeText(MainActivity.this,"Not enough Data ",Toast.LENGTH_SHORT).show();
                     }
-                }
+                }*/
             }
         });
 
@@ -456,7 +489,7 @@ public class MainActivity extends ActionBarActivity {
             }
             else {
                 Log.d("MainActivity", "finding the APs!" );
-                //Toast.makeText(this, "finding the APs!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "finding the APs!", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -599,7 +632,7 @@ public class MainActivity extends ActionBarActivity {
                     + ":" + minute + ":" + second+"\nGPS SingalQuality: "+gpsSignalQuality);
         } else {
 
-            tv1.setText("无法获取地理信息");
+            tv1.setText("can't get location information!");
         }
     }
 
@@ -609,7 +642,7 @@ public class MainActivity extends ActionBarActivity {
             // 当坐标改变时触发此函数，如果Provider传进相同的坐标，它就不会被触发
             if (location != null) {
                 updateToNewLocation(location);
-                Toast.makeText(MainActivity.this, "您的位置已发生改变！",
+                Toast.makeText(MainActivity.this, "Location is being changed！",
                         Toast.LENGTH_SHORT).show();
             }
         }

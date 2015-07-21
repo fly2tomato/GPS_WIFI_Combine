@@ -64,7 +64,7 @@ public class kalmanFilter {
         return X[i][i];
     }
 
-    public double kalman_Filter_Process_Y() {
+    protected double kalman_Filter_Process_Y() {
         y_wifi[0] = y_wifi_array [0];
         y_wifi[1] = y_wifi_array [1];
         y_wifi[2] = y_wifi_array [2];
