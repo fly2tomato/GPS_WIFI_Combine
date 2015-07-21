@@ -73,6 +73,7 @@ public class MainActivity extends ActionBarActivity {
     //collect 50 data
     private int arraySize = 20;
     private int countNumber = 5;
+    double wifiSignalQuality = 0;
     private double x_wifi = 0;
     private double y_wifi = 0;
     private double [] x_wifi_array = new double[arraySize];
@@ -101,7 +102,7 @@ public class MainActivity extends ActionBarActivity {
     private String gpggaString = null;
     private double amountOfSatInUsed = 0.0;
     private double hdop = 0.0;
-    private double signalQuality = 0.0;
+    private double gpsSignalQuality = 0.0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -244,7 +245,15 @@ public class MainActivity extends ActionBarActivity {
                             //calc distance with rssi
 
 
-                            if(bestRssi1>= -60||bestRssi2>= -60||bestRssi3 >= -60){
+                            CalcSignalQuality calcSignalQuality = new CalcSignalQuality(bestRssi1,bestRssi2,bestRssi3);
+                            wifiSignalQuality = calcSignalQuality.getSignalQuality();
+
+                            CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
+                            double [] D_Float_ = calcDistance.getDistance();
+                            D_1Float =  D_Float_ [0];
+                            D_2Float =  D_Float_ [1];
+                            D_3Float =  D_Float_ [2];
+                            /*if(bestRssi1>= -60||bestRssi2>= -60||bestRssi3 >= -60){
                                 CalcDistance_outside calcDistance_outside = new CalcDistance_outside(bestRssi1, bestRssi2, bestRssi3);
                                 double [] D_Float_ = calcDistance_outside.getDistance();
                                 D_1Float =  D_Float_ [0];
@@ -252,12 +261,8 @@ public class MainActivity extends ActionBarActivity {
                                 D_3Float =  D_Float_ [2];
                             }
                             else{
-                                CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
-                                double [] D_Float_ = calcDistance.getDistance();
-                                D_1Float =  D_Float_ [0];
-                                D_2Float =  D_Float_ [1];
-                                D_3Float =  D_Float_ [2];
-                            }
+
+                            }*/
 
 
                             //calc the Location
@@ -465,12 +470,12 @@ public class MainActivity extends ActionBarActivity {
     private void openGPSSettings() {
         LocationManager alm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (alm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "GPS模块正常", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "GPS is working!", Toast.LENGTH_SHORT).show();
             getLocation();
             return;
         }
         else{
-            Toast.makeText(this, "请开启GPS！", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "please open GPS！", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
             startActivityForResult(intent, R.layout.activity_main); // 此为设置完成后返回到获取界面
             getLocation();
@@ -529,6 +534,7 @@ public class MainActivity extends ActionBarActivity {
     };
 
 
+    //get GPS signal-quality!
     private final GpsStatus.NmeaListener nmealistener = new GpsStatus.NmeaListener() {
         @Override
         public void onNmeaReceived(long timestamp, String nmea) {
@@ -551,10 +557,8 @@ public class MainActivity extends ActionBarActivity {
             }
 
             double amountOfSatInView = 6.0;
-
             double hdop_intial = 1.5;
-
-            signalQuality = ((amountOfSatInUsed-amountOfSatInView)/amountOfSatInView+(hdop_intial-hdop)/hdop_intial)/2;
+            gpsSignalQuality = ((amountOfSatInUsed-amountOfSatInView)/amountOfSatInView+(hdop_intial-hdop)/hdop_intial)/2;
         }
     };
 
@@ -592,7 +596,7 @@ public class MainActivity extends ActionBarActivity {
             tv1.setText("find " + numSatelliteList.size() + " satellites!" + "\nlatitude："
                     + latitude_intime + "\nlongitude：" + longitude_intime + "\naltitude：" + altitude
                     + "\ntime：" + year + "." + month + "." + date + "." + hour
-                    + ":" + minute + ":" + second);
+                    + ":" + minute + ":" + second+"\nGPS SingalQuality: "+gpsSignalQuality);
         } else {
 
             tv1.setText("无法获取地理信息");

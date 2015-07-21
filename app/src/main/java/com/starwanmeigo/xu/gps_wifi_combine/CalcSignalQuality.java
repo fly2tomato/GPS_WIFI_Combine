@@ -1,0 +1,32 @@
+package com.starwanmeigo.xu.gps_wifi_combine;
+
+/**
+ * Created by xu on 21.07.15.
+ */
+public class CalcSignalQuality {
+    double rssi1;
+    double rssi2;
+    double rssi3;
+    double p = -14.28;
+    double q = 5.72;
+    public CalcSignalQuality(double rssi1, double rssi2, double rssi3){
+        this.rssi1 = rssi1;
+        this.rssi2 = rssi2;
+        this.rssi3 = rssi3;
+    }
+
+    public double getSignalQuality(){
+        double signalQuality1 = calcSG(rssi1);
+        double signalQuality2 = calcSG(rssi2);
+        double signalQuality3 = calcSG(rssi3);
+
+        return (signalQuality1+signalQuality2+signalQuality3)/3;
+    }
+
+    private double calcSG(double rssi) {
+        double signalQuality = p/(rssi+q);
+
+        return signalQuality;
+    }
+
+}
