@@ -322,7 +322,7 @@ public class MainActivity extends ActionBarActivity {
                     gpsSignalQualityNorm = (gpsSignalQuality-gpsSignalQualityMin)/(gpsSignalQualityMax-gpsSignalQualityMin);
                     double weightWifi = wifiSignalQualityNorm/(wifiSignalQualityNorm+gpsSignalQualityNorm);
                     double weightGps = 1-weightWifi;
-                    accuracy_wifi_metric = accuracy_wifi*(1+(0.5-weightWifi));
+                    accuracy_wifi_metric = accuracy_wifi*(1+(0.5-weightWifi));//if weightWifi is bigger than 0.5, then accuracy_wifi_metric will smaller than original value.
                     accuracy_gps_metric = accuracy_gps*(1+(0.5-weightGps));
                     kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_metric,accuracy_wifi_metric);
                     longitude_kf = KF.kalman_Filter_Process_X();
@@ -489,7 +489,7 @@ public class MainActivity extends ActionBarActivity {
             }
             else {
                 Log.d("MainActivity", "finding the APs!" );
-                Toast.makeText(this, "finding the APs!", Toast.LENGTH_SHORT).show();
+                /*Toast.makeText(this, "finding the APs!", Toast.LENGTH_SHORT).show();*/
             }
         }
 
@@ -629,7 +629,7 @@ public class MainActivity extends ActionBarActivity {
             tv1.setText("find " + numSatelliteList.size() + " satellites!" + "\nlatitude："
                     + latitude_intime + "\nlongitude：" + longitude_intime + "\naltitude：" + altitude
                     + "\ntime：" + year + "." + month + "." + date + "." + hour
-                    + ":" + minute + ":" + second+"\nGPS SingalQuality: "+gpsSignalQuality);
+                    + ":" + minute + ":" + second+"\nGPS SignalQuality: "+gpsSignalQuality+"\nWIFI SignalQuality:"+wifiSignalQuality);
         } else {
 
             tv1.setText("can't get location information!");

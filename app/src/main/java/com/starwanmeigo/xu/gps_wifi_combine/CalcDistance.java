@@ -14,7 +14,7 @@ public class CalcDistance {
     double rssi1;
     double rssi2;
     double rssi3;
-    //the big differece between CalcDistance.java and CalcDistance_outside.java is here: the parameters A and n are different.
+    //the big differece between CalcDistance.java and CalcDistance_outside.java is here: the parameters A and n are differen t.
     double A = 34.04;
     double n = 2.606;
     double distance [] = new double[3];
