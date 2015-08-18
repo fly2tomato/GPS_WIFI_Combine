@@ -98,8 +98,10 @@ public class MainActivity extends ActionBarActivity {
 
     private double accuracy_wifi = 4;
 
-    private double longitude_kf = 0;
-    private double latitude_kf = 0;
+    double[] weightWifi = new double[5];
+    double[] weightGps = new  double[5];
+    private double []longitude_kf = new double[5];
+    private double [] latitude_kf = new double[5];
     private double [] bearing = new double[arraySize];
     private double [] distance = new double[arraySize];
 
@@ -279,6 +281,11 @@ public class MainActivity extends ActionBarActivity {
                             convertCartesianToLonLat newLonLat = new convertCartesianToLonLat(initLocation, bearing[count], distance[count]);
                             cartesian_to_latitude [count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).latitude;
                             cartesian_to_longitude [count] = newLonLat.getDestinationPoint(initLocation,bearing[count], distance[count]).longitude;
+
+                            x_wifi_array_sum = x_wifi_array[0]+x_wifi_array[1]+x_wifi_array[2]+x_wifi_array[3]+x_wifi_array[4];
+                            x_wifi_array_average = x_wifi_array_sum/x_wifi_array.length;
+                            y_wifi_array_sum = y_wifi_array[0]+y_wifi_array[1]+y_wifi_array[2]+y_wifi_array[3]+y_wifi_array[4];
+                            y_wifi_array_average = y_wifi_array_sum/y_wifi_array.length;
                         }
 
                         wifiAP.post(new Runnable() {
@@ -319,73 +326,43 @@ public class MainActivity extends ActionBarActivity {
                 double gpsSignalQualityMax = 0.5;
                 double accuracy_wifi_metric = 0.0;
                 double accuracy_gps_metric = 0.0;
+                double [] factor = {0.9,0.95,1,1.05,1.1};
                 longitude_gps = longitude_gps_average;
                 latitude_gps = latitude_gps_average;
                 accuracy_gps = accuracy_gps_average;
 
-                if(wifiSignalQuality != 0 && gpsSignalQuality != 0){
-                    wifiSignalQualityNorm = (wifiSignalQuality-wifiSignalQualityMin)/(wifiSignalQualityMax-wifiSignalQualityMin);
-                    gpsSignalQualityNorm = (gpsSignalQuality-gpsSignalQualityMin)/(gpsSignalQualityMax-gpsSignalQualityMin);
-                    double weightWifi = wifiSignalQualityNorm/(wifiSignalQualityNorm+gpsSignalQualityNorm);
-                    double weightGps = 1-weightWifi;
-                    accuracy_wifi_metric = accuracy_wifi*(1+(0.5-weightWifi));//if weightWifi is bigger than 0.5, then accuracy_wifi_metric will smaller than original value.
-                    accuracy_gps_metric = accuracy_gps*(1+(0.5-weightGps));
-                    kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_metric,accuracy_wifi_metric);
-                    longitude_kf = KF.kalman_Filter_Process_X();
-                    latitude_kf = KF.kalman_Filter_Process_Y();
-                    Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                    Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                }
-                else if(wifiSignalQuality == 0 && gpsSignalQuality != 0){
-                    latitude_kf = latitude_gps;
-                    longitude_kf = longitude_gps;
-                    Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                    Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                }
-                else if(wifiSignalQuality != 0 && gpsSignalQuality == 0){
-                    latitude_kf = cartesian_to_latitude[0];
-                    longitude_kf = cartesian_to_longitude[0];
-                    Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                    Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                }
-                else if(wifiSignalQuality == 0 && gpsSignalQuality == 0){
-                    Toast.makeText(MainActivity.this,"Not enough Data to locate! ",Toast.LENGTH_SHORT).show();
-                }
-
-
-
-
-                /*y_wifi_array = new double[]{51, 53, 54, 50, 52};
-                x_wifi_array = new double[]{11, 14 ,15 ,13, 16};*/
-                //determine ob longitude and latitude from GPS is null,if null,choose the location information from wifi
-                //if we receive data from gps
-                /*if (sateNumbers() != 0){
-                    if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
+                for(int m=0;m<5;m++){
+                    if(wifiSignalQuality != 0 && gpsSignalQuality != 0){
+                        wifiSignalQualityNorm = (wifiSignalQuality-wifiSignalQualityMin)/(wifiSignalQualityMax-wifiSignalQualityMin);
+                        gpsSignalQualityNorm = (gpsSignalQuality-gpsSignalQualityMin)/(gpsSignalQualityMax-gpsSignalQualityMin);
+                        weightWifi[m] = factor[m]*wifiSignalQualityNorm/(wifiSignalQualityNorm+gpsSignalQualityNorm);
+                        weightGps[m] = 1-weightWifi[m];
+                        accuracy_wifi_metric = accuracy_wifi*(1+(0.5-weightWifi[m]));//if weightWifi is bigger than 0.5, then accuracy_wifi_metric will smaller than original value.
+                        accuracy_gps_metric = accuracy_gps*(1+(0.5-weightGps[m]));
                         kalmanFilter KF = new kalmanFilter(longitude_gps,latitude_gps,cartesian_to_longitude,cartesian_to_latitude,accuracy_gps_metric,accuracy_wifi_metric);
-                        longitude_kf = KF.kalman_Filter_Process_X();
-                        latitude_kf = KF.kalman_Filter_Process_Y();
-                        Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                        Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                        longitude_kf[m] = KF.kalman_Filter_Process_X();
+                        latitude_kf[m] = KF.kalman_Filter_Process_Y();
                     }
-                    else{
-                        latitude_kf = latitude_gps;
-                        longitude_kf = longitude_gps;
-                        Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                        Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
+                    else if(wifiSignalQuality == 0 && gpsSignalQuality != 0){
+                        latitude_kf[m] = latitude_gps;
+                        longitude_kf[m] = longitude_gps;
                     }
+                    else if(wifiSignalQuality != 0 && gpsSignalQuality == 0){
+                        latitude_kf[m] = cartesian_to_latitude[0];
+                        longitude_kf[m] = cartesian_to_longitude[0];
+                    }
+                    else if(wifiSignalQuality == 0 && gpsSignalQuality == 0){
+                        Toast.makeText(MainActivity.this,"Not enough Data to locate! ",Toast.LENGTH_SHORT).show();
+                    }
+
                 }
-                //if we don't receive data from gps
-                else if (sateNumbers() == 0){
-                    if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
-                        latitude_kf = cartesian_to_latitude[0];
-                        longitude_kf = cartesian_to_longitude[0];
-                        Longitude_KF.setText(Double.toString(round(longitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                        Latitude_KF.setText(Double.toString(round(latitude_kf, 8, BigDecimal.ROUND_HALF_DOWN)));
-                    }
-                    else{
-                        Toast.makeText(MainActivity.this,"Not enough Data ",Toast.LENGTH_SHORT).show();
-                    }
-                }*/
+
+
+
+                Longitude_KF.setText(Double.toString(round(longitude_kf[2], 8, BigDecimal.ROUND_HALF_DOWN)));
+                Latitude_KF.setText(Double.toString(round(latitude_kf[2], 8, BigDecimal.ROUND_HALF_DOWN)));
+
+
             }
         });
 
@@ -401,14 +378,29 @@ public class MainActivity extends ActionBarActivity {
                 String lat_gps = Double.toString(latitude_gps)+" ";
                 String lon_wifi = Double.toString(longitude_wifi)+" ";
                 String lat_wifi = Double.toString(latitude_wifi)+" ";
-                String lon_kf = Double.toString(longitude_kf)+" ";
-                String lat_kf = Double.toString(latitude_kf)+" ";
+                String lon_kf1 = Double.toString(longitude_kf[0])+" ";
+                String lon_kf2 = Double.toString(longitude_kf[1])+" ";
+                String lon_kf3 = Double.toString(longitude_kf[2])+" ";
+                String lon_kf4 = Double.toString(longitude_kf[3])+" ";
+                String lon_kf5 = Double.toString(longitude_kf[4])+" ";
+                String lat_kf1 = Double.toString(latitude_kf[0])+" ";
+                String lat_kf2 = Double.toString(latitude_kf[1])+" ";
+                String lat_kf3 = Double.toString(latitude_kf[2])+" ";
+                String lat_kf4 = Double.toString(latitude_kf[3])+" ";
+                String lat_kf5 = Double.toString(latitude_kf[4])+" ";
                 String rssi1 = Double.toString(bestRssi1)+" ";
                 String rssi2 = Double.toString(bestRssi2)+" ";
                 String rssi3 = Double.toString(bestRssi3)+" ";
-                String x_wifi = Double.toString(XFloat)+" ";
-                String y_wifi = Double.toString(YFloat)+" ";
-                String dataStream = "RSSIs:\n"+rssi1+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nx&y of WIFI:\n"+x_wifi+y_wifi;
+                String x_wifi = Double.toString(x_wifi_array_average)+" ";
+                String y_wifi = Double.toString(y_wifi_array_average)+" ";
+                String dataStream1 = "RSSIs(AP1,AP2,AP3):\n"+rssi1+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
+                String dataStream2 = "Kalman Filter_1\n"+lon_kf1+lat_kf1;
+                String dataStream3 = "\nKalman Filter_2\n"+lon_kf2+lat_kf2;
+                String dataStream4 = "\nKalman Filter_3\n"+lon_kf3+lat_kf3;
+                String dataStream5 = "\nKalman Filter_4\n"+lon_kf4+lat_kf4;
+                String dataStream6 = "\nKalman Filter_5\n"+lon_kf5+lat_kf5;
+                String dataStream = dataStream1+dataStream2+dataStream3+dataStream4+dataStream5;
+
                 FileService service = new FileService(getApplicationContext());
                 try {
                     service.save(filename,dataStream);
@@ -429,8 +421,8 @@ public class MainActivity extends ActionBarActivity {
                 // 顺便提一下，如果想取出Intent对象中的这些值，需要在你的另一个Activity中用getXXXXXExtra方法，
                 // 注意需要使用对应类型的方法，参数为键名
                 double gooLatLng [] = new double[4];
-                gooLatLng [0] = latitude_kf;
-                gooLatLng [1] = longitude_kf;
+                gooLatLng [0] = latitude_kf[2];
+                gooLatLng [1] = longitude_kf[2];
                 gooLatLng [2] = cartesian_to_latitude[0];
                 gooLatLng [3] = cartesian_to_longitude[0];
                 LatLng latLng = new LatLng(gooLatLng[0],gooLatLng[1]);
