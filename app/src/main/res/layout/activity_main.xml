@@ -251,6 +251,34 @@
             android:id="@+id/calcbtn"
             android:layout_width="381dp"
             android:layout_height="50dp"/>
+
+        <RelativeLayout
+            android:layout_width="380dp"
+            android:layout_height="fill_parent">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FileNumber:"
+                android:id="@+id/filetext"
+                android:layout_alignBottom="@+id/editfilenumber"
+                android:layout_alignParentTop="true" />
+            <Button
+                android:layout_toRightOf="@+id/editfilenumber"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:id="@+id/savebtn"
+                android:text="save" />
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/editfilenumber"
+                android:layout_toRightOf="@+id/filetext"
+                android:layout_alignParentTop="true"/>
+        </RelativeLayout>
+
+
         <Button
             android:text="googlemap"
             android:id="@+id/googleMap"

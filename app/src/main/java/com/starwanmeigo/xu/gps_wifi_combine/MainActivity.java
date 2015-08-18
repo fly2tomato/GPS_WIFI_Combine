@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -87,6 +88,11 @@ public class MainActivity extends ActionBarActivity {
     double D_1Float = 0;
     double D_2Float = 0;
     double D_3Float = 0;
+    double XFloat = 0;
+    double YFloat = 0;
+    double bestRssi1 = 0;
+    double bestRssi2 = 0;
+    double bestRssi3 = 0;
 
 
 
@@ -131,6 +137,7 @@ public class MainActivity extends ActionBarActivity {
         final TextView Latitude_KF = (TextView) findViewById(R.id.kf_latitude);
         Button startBtn = (Button) findViewById(R.id.startbtn);
         Button calcBtn = (Button) findViewById(R.id.calcbtn);
+        Button saveBtn = (Button) findViewById(R.id.savebtn);
         Button gooMap = (Button) findViewById(R.id.googleMap);
 
         openGPSSettings();
@@ -238,9 +245,9 @@ public class MainActivity extends ActionBarActivity {
                             selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1,routerInfoArray2,routerInfoArray3);
 
                             final double [] bestRssi = sBR.funktionOfX();
-                            final double bestRssi1 = bestRssi [0];
-                            final double bestRssi2 = bestRssi [1];
-                            final double bestRssi3 = bestRssi [2];
+                            bestRssi1 = bestRssi [0];
+                            bestRssi2 = bestRssi [1];
+                            bestRssi3 = bestRssi [2];
 
                             //calc distance with rssi
 
@@ -256,8 +263,7 @@ public class MainActivity extends ActionBarActivity {
 
 
                             //calc the Location
-                            double XFloat = 0;
-                            double YFloat = 0;
+
                             if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
                                 calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
                                 XFloat = calclocation.getLocationX();
@@ -347,6 +353,8 @@ public class MainActivity extends ActionBarActivity {
                 }
 
 
+
+
                 /*y_wifi_array = new double[]{51, 53, 54, 50, 52};
                 x_wifi_array = new double[]{11, 14 ,15 ,13, 16};*/
                 //determine ob longitude and latitude from GPS is null,if null,choose the location information from wifi
@@ -378,6 +386,38 @@ public class MainActivity extends ActionBarActivity {
                         Toast.makeText(MainActivity.this,"Not enough Data ",Toast.LENGTH_SHORT).show();
                     }
                 }*/
+            }
+        });
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText filenumber = (EditText) findViewById(R.id.editfilenumber);
+                double longitude_wifi = (cartesian_to_longitude[0]+cartesian_to_longitude[1]+cartesian_to_longitude[2]+cartesian_to_longitude[3]+cartesian_to_longitude[4])/5;
+                double latitude_wifi = (cartesian_to_latitude[0]+cartesian_to_latitude[1]+cartesian_to_latitude[2]+cartesian_to_latitude[3]+cartesian_to_latitude[4])/5;
+                String fileNum = filenumber.getText().toString();
+                String filename ="data"+fileNum+".txt";
+                String lon_gps = Double.toString(longitude_gps)+" ";
+                String lat_gps = Double.toString(latitude_gps)+" ";
+                String lon_wifi = Double.toString(longitude_wifi)+" ";
+                String lat_wifi = Double.toString(latitude_wifi)+" ";
+                String lon_kf = Double.toString(longitude_kf)+" ";
+                String lat_kf = Double.toString(latitude_kf)+" ";
+                String rssi1 = Double.toString(bestRssi1)+" ";
+                String rssi2 = Double.toString(bestRssi2)+" ";
+                String rssi3 = Double.toString(bestRssi3)+" ";
+                String x_wifi = Double.toString(XFloat)+" ";
+                String y_wifi = Double.toString(YFloat)+" ";
+                String dataStream = "RSSIs:\n"+rssi1+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nx&y of WIFI:\n"+x_wifi+y_wifi;
+                FileService service = new FileService(getApplicationContext());
+                try {
+                    service.save(filename,dataStream);
+                    Toast.makeText(getApplication(),"data saved",Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplication(),"data fail saved",Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -642,8 +682,8 @@ public class MainActivity extends ActionBarActivity {
             // 当坐标改变时触发此函数，如果Provider传进相同的坐标，它就不会被触发
             if (location != null) {
                 updateToNewLocation(location);
-                Toast.makeText(MainActivity.this, "Location is being changed！",
-                        Toast.LENGTH_SHORT).show();
+                /*Toast.makeText(MainActivity.this, "Location is being changed！",
+                        Toast.LENGTH_SHORT).show();*/
             }
         }
 
