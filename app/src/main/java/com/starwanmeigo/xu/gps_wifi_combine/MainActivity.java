@@ -65,12 +65,18 @@ public class MainActivity extends ActionBarActivity {
 
 
     //set coordinates of routers
-    double ap1_x = 0;
+    /*double ap1_x = 0;
     double ap1_y = 4.1868;
     double ap2_x = 2.5916;
     double ap2_y = 6.8637;
     double ap3_x = 5.0574;
-    double ap3_y = 4.1868;
+    double ap3_y = 4.1868;*/
+    double ap1_x = 1.4809;
+    double ap1_y = 8.0134;
+    double ap2_x = 4.6376;
+    double ap2_y = 6.0159;
+    double ap3_x = 1.1097;
+    double ap3_y = 1.8736;
     //collect 50 data
     private int arraySize = 20;
     private int countNumber = 5;
@@ -157,25 +163,25 @@ public class MainActivity extends ActionBarActivity {
                             }
                         });
 
-                        for(int i =0;i< gps_size;i++){
-                            gpsSignals  = getGpsInfo();
-                            longitude_gps_array [i] = gpsSignals[0];
-                            latitude_gps_array [i] = gpsSignals[1];
-                            accuracy_gps_array [i] = gpsSignals [2];
-                            countSateNum = (int) gpsSignals [3];
+                        for (int i = 0; i < gps_size; i++) {
+                            gpsSignals = getGpsInfo();
+                            longitude_gps_array[i] = gpsSignals[0];
+                            latitude_gps_array[i] = gpsSignals[1];
+                            accuracy_gps_array[i] = gpsSignals[2];
+                            countSateNum = (int) gpsSignals[3];
                             longitude_gps_sum += longitude_gps_array[i];
                             latitude_gps_sum += latitude_gps_array[i];
                             accuracy_gps_sum += accuracy_gps_array[i];
 
-                            try{
+                            try {
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                         }
-                        longitude_gps_average = longitude_gps_sum/gps_size;
-                        latitude_gps_average = latitude_gps_sum/gps_size;
-                        accuracy_gps_average = accuracy_gps_sum/gps_size;
+                        longitude_gps_average = longitude_gps_sum / gps_size;
+                        latitude_gps_average = latitude_gps_sum / gps_size;
+                        accuracy_gps_average = accuracy_gps_sum / gps_size;
                         longitude_gps_average_8 = round(longitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
                         latitude_gps_average_8 = round(latitude_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
                         accuracy_gps_average_8 = round(accuracy_gps_average, 8, BigDecimal.ROUND_HALF_DOWN);
@@ -206,19 +212,19 @@ public class MainActivity extends ActionBarActivity {
                                 loadingSpinnerForWifi.setVisibility(View.VISIBLE);
                             }
                         });
-                        for(int count=0;count<countNumber;count++){
+                        for (int count = 0; count < countNumber; count++) {
                             double rssiLevel_2_sum = 0;
                             double[] routerInfoArray1 = new double[arraySize];
                             double[] routerInfoArray2 = new double[arraySize];
                             double[] routerInfoArray3 = new double[arraySize];
 
                             // get Router Info for 3 ssids, <arraySize> times
-                            for(int i =0;i<arraySize;i++){
-                                double [] rssiLevel_  = getRouterInfo();
+                            for (int i = 0; i < arraySize; i++) {
+                                double[] rssiLevel_ = getRouterInfo();
                                 routerInfoArray1[i] = rssiLevel_[0];
                                 routerInfoArray2[i] = rssiLevel_[1];
                                 routerInfoArray3[i] = rssiLevel_[2];
-                                try{
+                                try {
                                     Thread.sleep(500);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
@@ -235,7 +241,7 @@ public class MainActivity extends ActionBarActivity {
                             String ssid1Log = new String("SSID1: ");
                             String ssid2Log = new String("SSID2: ");
                             String ssid3Log = new String("SSID3: ");
-                            for(int i =0;i<arraySize;i++){
+                            for (int i = 0; i < arraySize; i++) {
                                 sum1 += routerInfoArray1[i];
                                 sum2 += routerInfoArray2[i];
                                 sum3 += routerInfoArray3[i];
@@ -244,48 +250,48 @@ public class MainActivity extends ActionBarActivity {
                                 ssid3Log = ssid3Log.concat(Double.toString(routerInfoArray3[i])).concat(" ");
                             }
 
-                            selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1,routerInfoArray2,routerInfoArray3);
+                            selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1, routerInfoArray2, routerInfoArray3);
 
-                            final double [] bestRssi = sBR.funktionOfX();
-                            bestRssi1 = bestRssi [0];
-                            bestRssi2 = bestRssi [1];
-                            bestRssi3 = bestRssi [2];
+                            final double[] bestRssi = sBR.funktionOfX();
+                            bestRssi1 = bestRssi[0];
+                            bestRssi2 = bestRssi[1];
+                            bestRssi3 = bestRssi[2];
 
                             //calc distance with rssi
 
 
-                            CalcSignalQuality calcSignalQuality = new CalcSignalQuality(bestRssi1,bestRssi2,bestRssi3);
+                            CalcSignalQuality calcSignalQuality = new CalcSignalQuality(bestRssi1, bestRssi2, bestRssi3);
                             wifiSignalQuality = calcSignalQuality.getSignalQuality();
 
                             CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
-                            double [] D_Float_ = calcDistance.getDistance();
-                            D_1Float =  D_Float_ [0];
-                            D_2Float =  D_Float_ [1];
-                            D_3Float =  D_Float_ [2];
+                            double[] D_Float_ = calcDistance.getDistance();
+                            D_1Float = D_Float_[0];
+                            D_2Float = D_Float_[1];
+                            D_3Float = D_Float_[2];
 
 
                             //calc the Location
 
-                            if (D_1Float!=0||D_2Float!=0||D_3Float!=0){
+                            if (D_1Float != 0 || D_2Float != 0 || D_3Float != 0) {
                                 calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
                                 XFloat = calclocation.getLocationX();
                                 YFloat = calclocation.getLocationY();
                             }
-                            x_wifi_array [count] = XFloat;
-                            y_wifi_array [count] = YFloat;
+                            x_wifi_array[count] = XFloat;
+                            y_wifi_array[count] = YFloat;
 
                             //we should convert Cartesian To Lon and Lat here!
-                            distance [count] = Math.sqrt(Math.abs(XFloat*XFloat+YFloat*YFloat));
-                            bearing [count] = Math.atan2(YFloat,XFloat);
+                            distance[count] = Math.sqrt(Math.abs(XFloat * XFloat + YFloat * YFloat));
+                            bearing[count] = Math.atan2(YFloat, XFloat);
                             LatLng initLocation = new LatLng(51.0270068, 13.7243968);//this is the original point and we get this data by checking google map
                             convertCartesianToLonLat newLonLat = new convertCartesianToLonLat(initLocation, bearing[count], distance[count]);
-                            cartesian_to_latitude [count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).latitude;
-                            cartesian_to_longitude [count] = newLonLat.getDestinationPoint(initLocation,bearing[count], distance[count]).longitude;
+                            cartesian_to_latitude[count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).latitude;
+                            cartesian_to_longitude[count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).longitude;
 
-                            x_wifi_array_sum = x_wifi_array[0]+x_wifi_array[1]+x_wifi_array[2]+x_wifi_array[3]+x_wifi_array[4];
-                            x_wifi_array_average = x_wifi_array_sum/x_wifi_array.length;
-                            y_wifi_array_sum = y_wifi_array[0]+y_wifi_array[1]+y_wifi_array[2]+y_wifi_array[3]+y_wifi_array[4];
-                            y_wifi_array_average = y_wifi_array_sum/y_wifi_array.length;
+                            x_wifi_array_sum = x_wifi_array[0] + x_wifi_array[1] + x_wifi_array[2] + x_wifi_array[3] + x_wifi_array[4];
+                            x_wifi_array_average = x_wifi_array_sum / x_wifi_array.length;
+                            y_wifi_array_sum = y_wifi_array[0] + y_wifi_array[1] + y_wifi_array[2] + y_wifi_array[3] + y_wifi_array[4];
+                            y_wifi_array_average = y_wifi_array_sum / y_wifi_array.length;
                         }
 
                         wifiAP.post(new Runnable() {
@@ -293,16 +299,16 @@ public class MainActivity extends ActionBarActivity {
                             public void run() {
                                 wifiAP.setVisibility(View.VISIBLE);
                                 loadingSpinnerForWifi.setVisibility(View.GONE);
-                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[0]);
-                                X2_WIFI.setText(Double.toString(round(x_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[1]);
-                                X3_WIFI.setText(Double.toString(round(x_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[2]);
-                                X4_WIFI.setText(Double.toString(round(x_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[3]);
-                                X5_WIFI.setText(Double.toString(round(x_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_latitude[4]);
-                                Y1_WIFI.setText(Double.toString(round(y_wifi_array[0],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[0]);
-                                Y2_WIFI.setText(Double.toString(round(y_wifi_array[1],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[1]);
-                                Y3_WIFI.setText(Double.toString(round(y_wifi_array[2],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[2]);
-                                Y4_WIFI.setText(Double.toString(round(y_wifi_array[3],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[3]);
-                                Y5_WIFI.setText(Double.toString(round(y_wifi_array[4],8,BigDecimal.ROUND_HALF_DOWN))+' '+cartesian_to_longitude[4]);
+                                X1_WIFI.setText(Double.toString(round(x_wifi_array[0], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_latitude[0]);
+                                X2_WIFI.setText(Double.toString(round(x_wifi_array[1], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_latitude[1]);
+                                X3_WIFI.setText(Double.toString(round(x_wifi_array[2], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_latitude[2]);
+                                X4_WIFI.setText(Double.toString(round(x_wifi_array[3], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_latitude[3]);
+                                X5_WIFI.setText(Double.toString(round(x_wifi_array[4], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_latitude[4]);
+                                Y1_WIFI.setText(Double.toString(round(y_wifi_array[0], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_longitude[0]);
+                                Y2_WIFI.setText(Double.toString(round(y_wifi_array[1], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_longitude[1]);
+                                Y3_WIFI.setText(Double.toString(round(y_wifi_array[2], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_longitude[2]);
+                                Y4_WIFI.setText(Double.toString(round(y_wifi_array[3], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_longitude[3]);
+                                Y5_WIFI.setText(Double.toString(round(y_wifi_array[4], 8, BigDecimal.ROUND_HALF_DOWN)) + ' ' + cartesian_to_longitude[4]);
                             }
                         });
                     }
@@ -532,12 +538,12 @@ public class MainActivity extends ActionBarActivity {
 
         return level_;
     }
-    private void openGPSSettings() {
-        LocationManager alm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        if (alm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "GPS is working!", Toast.LENGTH_SHORT).show();
-            getLocation();
-            return;
+        private void openGPSSettings() {
+            LocationManager alm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            if (alm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(this, "GPS is working!", Toast.LENGTH_SHORT).show();
+                getLocation();
+                return;
         }
         else{
             Toast.makeText(this, "please open GPS！", Toast.LENGTH_SHORT).show();

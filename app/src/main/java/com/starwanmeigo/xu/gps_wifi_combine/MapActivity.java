@@ -3,6 +3,7 @@ package com.starwanmeigo.xu.gps_wifi_combine;
 /**
  * Created by xu on 10.06.15.
  */
+
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 

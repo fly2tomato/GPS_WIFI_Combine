@@ -26,19 +26,19 @@ public class CalcDistance {
     }
 
     public double [] getDistance (){
-        if (rssi1!=0||rssi2!=0||rssi3!=0){
-            double power1 = (abs(rssi1) - A) / (10 * n);
-            d1 = pow(10,power1);
-            double power2 = (abs(rssi2) - A) / (10 * n);
-            d2 = pow(10,power2);
-            double power3 = (abs(rssi3) - A) / (10 * n);
-            d3 = pow(10,power3);
-        }
-        else{
-            d1 = 0;
-            d2 = 0;
-            d3 = 0;
-        }
+            if (rssi1!=0||rssi2!=0||rssi3!=0){
+                double power1 = (abs(rssi1) - A) / (10 * n);
+                d1 = pow(10,power1);
+                double power2 = (abs(rssi2) - A) / (10 * n);
+                d2 = pow(10,power2);
+                double power3 = (abs(rssi3) - A) / (10 * n);
+                d3 = pow(10,power3);
+            }
+            else{
+                d1 = 0;
+                d2 = 0;
+                d3 = 0;
+            }
 
 
         distance [0] = d1;
