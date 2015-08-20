@@ -49,7 +49,7 @@ public class MapActivity extends ActionBarActivity {
         googleMap.setMyLocationEnabled(true);
 
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng_gps, 20));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng_gps, 18));
 
         // add marker
         googleMap.addMarker(new MarkerOptions().position(currentLatLng_kf).title("kalman fiter"));

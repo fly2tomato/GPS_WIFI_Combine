@@ -225,7 +225,7 @@ public class MainActivity extends ActionBarActivity {
                                 routerInfoArray2[i] = rssiLevel_[1];
                                 routerInfoArray3[i] = rssiLevel_[2];
                                 try {
-                                    Thread.sleep(500);
+                                    Thread.sleep(300);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
