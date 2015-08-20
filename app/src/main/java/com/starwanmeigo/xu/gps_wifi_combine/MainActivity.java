@@ -65,18 +65,18 @@ public class MainActivity extends ActionBarActivity {
 
 
     //set coordinates of routers
-    /*double ap1_x = 0;
+    double ap1_x = 0;
     double ap1_y = 4.1868;
     double ap2_x = 2.5916;
     double ap2_y = 6.8637;
     double ap3_x = 5.0574;
-    double ap3_y = 4.1868;*/
-    double ap1_x = 1.4809;
+    double ap3_y = 4.1868;
+    /*double ap1_x = 1.4809;
     double ap1_y = 8.0134;
     double ap2_x = 4.6376;
     double ap2_y = 6.0159;
     double ap3_x = 1.1097;
-    double ap3_y = 1.8736;
+    double ap3_y = 1.8736;*/
     //collect 50 data
     private int arraySize = 20;
     private int countNumber = 5;
@@ -289,9 +289,9 @@ public class MainActivity extends ActionBarActivity {
                             cartesian_to_longitude[count] = newLonLat.getDestinationPoint(initLocation, bearing[count], distance[count]).longitude;
 
                             x_wifi_array_sum = x_wifi_array[0] + x_wifi_array[1] + x_wifi_array[2] + x_wifi_array[3] + x_wifi_array[4];
-                            x_wifi_array_average = x_wifi_array_sum / x_wifi_array.length;
+                            x_wifi_array_average = x_wifi_array_sum / 5;
                             y_wifi_array_sum = y_wifi_array[0] + y_wifi_array[1] + y_wifi_array[2] + y_wifi_array[3] + y_wifi_array[4];
-                            y_wifi_array_average = y_wifi_array_sum / y_wifi_array.length;
+                            y_wifi_array_average = y_wifi_array_sum / 5;
                         }
 
                         wifiAP.post(new Runnable() {
@@ -399,13 +399,13 @@ public class MainActivity extends ActionBarActivity {
                 String rssi3 = Double.toString(bestRssi3)+" ";
                 String x_wifi = Double.toString(x_wifi_array_average)+" ";
                 String y_wifi = Double.toString(y_wifi_array_average)+" ";
-                String dataStream1 = "RSSIs(AP1,AP2,AP3):\n"+rssi1+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
-                String dataStream2 = "Kalman Filter_1\n"+lon_kf1+lat_kf1;
-                String dataStream3 = "\nKalman Filter_2\n"+lon_kf2+lat_kf2;
-                String dataStream4 = "\nKalman Filter_3\n"+lon_kf3+lat_kf3;
-                String dataStream5 = "\nKalman Filter_4\n"+lon_kf4+lat_kf4;
-                String dataStream6 = "\nKalman Filter_5\n"+lon_kf5+lat_kf5;
-                String dataStream = dataStream1+dataStream2+dataStream3+dataStream4+dataStream5;
+                String dataStream1 = "@point"+fileNum+"\nRSSIs(AP1,AP2,AP3):\n"+rssi1+"; "+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
+                String dataStream2 = "\nKalman Filter_1(a=0.9)\n"+lon_kf1+lat_kf1;
+                String dataStream3 = "\nKalman Filter_2(a=0.95)\n"+lon_kf2+lat_kf2;
+                String dataStream4 = "\nKalman Filter_3(a=1)\n"+lon_kf3+lat_kf3;
+                String dataStream5 = "\nKalman Filter_4(1.05)\n"+lon_kf4+lat_kf4;
+                String dataStream6 = "\nKalman Filter_5(1.1)\n"+lon_kf5+lat_kf5;
+                String dataStream = dataStream1+dataStream2+dataStream3+dataStream4+dataStream5+dataStream6;
 
                 FileService service = new FileService(getApplicationContext());
                 try {
