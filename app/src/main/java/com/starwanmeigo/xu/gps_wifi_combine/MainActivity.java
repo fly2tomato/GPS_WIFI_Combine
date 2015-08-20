@@ -399,7 +399,7 @@ public class MainActivity extends ActionBarActivity {
                 String rssi3 = Double.toString(bestRssi3)+" ";
                 String x_wifi = Double.toString(x_wifi_array_average)+" ";
                 String y_wifi = Double.toString(y_wifi_array_average)+" ";
-                String dataStream1 = "@point"+fileNum+"\nRSSIs(AP1,AP2,AP3):\n"+rssi1+"; "+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
+                String dataStream1 = "@point"+fileNum+"\nSignal Qualities:\nWIFI: "+wifiSignalQuality+"\nGPS: "+gpsSignalQuality+"\nRSSIs(AP1,AP2,AP3):\n"+rssi1+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
                 String dataStream2 = "\nKalman Filter_1(a=0.9)\n"+lon_kf1+lat_kf1;
                 String dataStream3 = "\nKalman Filter_2(a=0.95)\n"+lon_kf2+lat_kf2;
                 String dataStream4 = "\nKalman Filter_3(a=1)\n"+lon_kf3+lat_kf3;

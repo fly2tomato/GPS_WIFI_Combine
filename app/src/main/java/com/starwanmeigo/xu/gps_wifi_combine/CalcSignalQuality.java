@@ -24,9 +24,16 @@ public class CalcSignalQuality {
     }
 
     private double calcSG(double rssi) {
-        double signalQuality = p/(rssi+q);
+        double signalQuality = 0;
+        if (rssi == 0) {
+            return signalQuality;
+        }
+        else{
+            signalQuality = p/(rssi+q);
 
-        return signalQuality;
+            return signalQuality;
+        }
+
     }
 
 }
