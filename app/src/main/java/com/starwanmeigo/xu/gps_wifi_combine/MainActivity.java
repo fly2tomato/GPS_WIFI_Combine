@@ -221,11 +221,12 @@ public class MainActivity extends ActionBarActivity {
                             // get Router Info for 3 ssids, <arraySize> times
                             for (int i = 0; i < arraySize; i++) {
                                 double[] rssiLevel_ = getRouterInfo();
+
                                 routerInfoArray1[i] = rssiLevel_[0];
                                 routerInfoArray2[i] = rssiLevel_[1];
                                 routerInfoArray3[i] = rssiLevel_[2];
                                 try {
-                                    Thread.sleep(300);
+                                    Thread.sleep(500);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -502,7 +503,16 @@ public class MainActivity extends ActionBarActivity {
         List<ScanResult> wifiList;
         WifiManager wifiManager;
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        //open wifi
+        boolean iwe = wifiManager.isWifiEnabled();
+        if (!wifiManager.isWifiEnabled()){
+            wifiManager.setWifiEnabled(true);
+        }
         wifiList = (List<android.net.wifi.ScanResult>) wifiManager.getScanResults();
+        //close wifi
+        if (wifiManager.isWifiEnabled()){
+            wifiManager.setWifiEnabled(false);
+        }
 
         double level [] = new double[wifiList.size()];
         String ssid [] = new String[wifiList.size()];
@@ -537,7 +547,15 @@ public class MainActivity extends ActionBarActivity {
         level_ [2] = level_3;
 
         return level_;
+
+
+
+
     }
+
+
+
+
         private void openGPSSettings() {
             LocationManager alm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             if (alm.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
