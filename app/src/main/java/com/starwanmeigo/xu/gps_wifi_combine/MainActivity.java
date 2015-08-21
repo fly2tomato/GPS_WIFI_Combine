@@ -71,6 +71,10 @@ public class MainActivity extends ActionBarActivity {
     double ap2_y = 6.8637;
     double ap3_x = 5.0574;
     double ap3_y = 4.1868;
+    double ap4_x = 2.5916;
+    double ap4_y = 4.1868;
+    double ap5_x = 2.5916;
+    double ap5_y = 6.1706;
     /*double ap1_x = 1.4809;
     double ap1_y = 8.0134;
     double ap2_x = 4.6376;
@@ -94,11 +98,15 @@ public class MainActivity extends ActionBarActivity {
     double D_1Float = 0;
     double D_2Float = 0;
     double D_3Float = 0;
+    double D_4Float = 0;
+    double D_5Float = 0;
     double XFloat = 0;
     double YFloat = 0;
     double bestRssi1 = 0;
     double bestRssi2 = 0;
     double bestRssi3 = 0;
+    double bestRssi4 = 0;
+    double bestRssi5 = 0;
 
 
 
@@ -217,6 +225,8 @@ public class MainActivity extends ActionBarActivity {
                             double[] routerInfoArray1 = new double[arraySize];
                             double[] routerInfoArray2 = new double[arraySize];
                             double[] routerInfoArray3 = new double[arraySize];
+                            double[] routerInfoArray4 = new double[arraySize];
+                            double[] routerInfoArray5 = new double[arraySize];
 
                             // get Router Info for 3 ssids, <arraySize> times
                             for (int i = 0; i < arraySize; i++) {
@@ -225,6 +235,8 @@ public class MainActivity extends ActionBarActivity {
                                 routerInfoArray1[i] = rssiLevel_[0];
                                 routerInfoArray2[i] = rssiLevel_[1];
                                 routerInfoArray3[i] = rssiLevel_[2];
+                                routerInfoArray4[i] = rssiLevel_[3];
+                                routerInfoArray5[i] = rssiLevel_[4];
                                 try {
                                     Thread.sleep(500);
                                 } catch (InterruptedException e) {
@@ -238,43 +250,55 @@ public class MainActivity extends ActionBarActivity {
                             double sum1 = 0;
                             double sum2 = 0;
                             double sum3 = 0;
+                            double sum4 = 0;
+                            double sum5 = 0;
                             //log info
                             String ssid1Log = new String("SSID1: ");
                             String ssid2Log = new String("SSID2: ");
                             String ssid3Log = new String("SSID3: ");
+                            String ssid4Log = new String("SSID4: ");
+                            String ssid5Log = new String("SSID5: ");
                             for (int i = 0; i < arraySize; i++) {
                                 sum1 += routerInfoArray1[i];
                                 sum2 += routerInfoArray2[i];
                                 sum3 += routerInfoArray3[i];
+                                sum4 += routerInfoArray4[i];
+                                sum5 += routerInfoArray5[i];
                                 ssid1Log = ssid1Log.concat(Double.toString(routerInfoArray1[i])).concat(" ");
                                 ssid2Log = ssid2Log.concat(Double.toString(routerInfoArray2[i])).concat(" ");
                                 ssid3Log = ssid3Log.concat(Double.toString(routerInfoArray3[i])).concat(" ");
+                                ssid4Log = ssid3Log.concat(Double.toString(routerInfoArray4[i])).concat(" ");
+                                ssid5Log = ssid3Log.concat(Double.toString(routerInfoArray5[i])).concat(" ");
                             }
 
-                            selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1, routerInfoArray2, routerInfoArray3);
+                            selectBetterRssi sBR = new selectBetterRssi(routerInfoArray1, routerInfoArray2, routerInfoArray3, routerInfoArray4, routerInfoArray5);
 
                             final double[] bestRssi = sBR.funktionOfX();
                             bestRssi1 = bestRssi[0];
                             bestRssi2 = bestRssi[1];
                             bestRssi3 = bestRssi[2];
+                            bestRssi4 = bestRssi[3];
+                            bestRssi5 = bestRssi[4];
 
                             //calc distance with rssi
 
 
-                            CalcSignalQuality calcSignalQuality = new CalcSignalQuality(bestRssi1, bestRssi2, bestRssi3);
+                            CalcSignalQuality calcSignalQuality = new CalcSignalQuality(bestRssi1, bestRssi2, bestRssi3, bestRssi4, bestRssi5);
                             wifiSignalQuality = calcSignalQuality.getSignalQuality();
 
-                            CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3);
+                            CalcDistance calcDistance = new CalcDistance(bestRssi1, bestRssi2, bestRssi3, bestRssi4, bestRssi5);
                             double[] D_Float_ = calcDistance.getDistance();
                             D_1Float = D_Float_[0];
                             D_2Float = D_Float_[1];
                             D_3Float = D_Float_[2];
+                            D_4Float = D_Float_[3];
+                            D_5Float = D_Float_[4];
 
 
                             //calc the Location
 
-                            if (D_1Float != 0 || D_2Float != 0 || D_3Float != 0) {
-                                calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float);
+                            if (D_1Float != 0 || D_2Float != 0 || D_3Float != 0 || D_4Float != 0 || D_5Float != 0) {
+                                calcLocation_leastSquares calclocation = new calcLocation_leastSquares(ap1_x, ap1_y, D_1Float, ap2_x, ap2_y, D_2Float, ap3_x, ap3_y, D_3Float, ap4_x, ap4_y, D_4Float, ap5_x, ap5_y, D_5Float);
                                 XFloat = calclocation.getLocationX();
                                 YFloat = calclocation.getLocationY();
                             }
@@ -398,9 +422,11 @@ public class MainActivity extends ActionBarActivity {
                 String rssi1 = Double.toString(bestRssi1)+" ";
                 String rssi2 = Double.toString(bestRssi2)+" ";
                 String rssi3 = Double.toString(bestRssi3)+" ";
+                String rssi4 = Double.toString(bestRssi4)+" ";
+                String rssi5 = Double.toString(bestRssi5)+" ";
                 String x_wifi = Double.toString(x_wifi_array_average)+" ";
                 String y_wifi = Double.toString(y_wifi_array_average)+" ";
-                String dataStream1 = "@point"+fileNum+"\nSignal Qualities:\nWIFI: "+wifiSignalQuality+"\nGPS: "+gpsSignalQuality+"\nRSSIs(AP1,AP2,AP3):\n"+rssi1+rssi2+rssi3+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
+                String dataStream1 = "@point"+fileNum+"\nSignal Qualities:\nWIFI: "+wifiSignalQuality+"\nGPS: "+gpsSignalQuality+"\nRSSIs(AP1,AP2,AP3,AP4,AP5):\n"+rssi1+rssi2+rssi3+rssi4+rssi5+"\nLon&Lat of GPS:\n"+lon_gps+lat_gps+"\nLon&Lat of WIFI:\n"+lon_wifi+lat_wifi+"\nX&Y of WIFI:\n"+x_wifi+y_wifi;
                 String dataStream2 = "\nKalman Filter_1(a=0.9)\n"+lon_kf1+lat_kf1;
                 String dataStream3 = "\nKalman Filter_2(a=0.95)\n"+lon_kf2+lat_kf2;
                 String dataStream4 = "\nKalman Filter_3(a=1)\n"+lon_kf3+lat_kf3;
@@ -503,16 +529,7 @@ public class MainActivity extends ActionBarActivity {
         List<ScanResult> wifiList;
         WifiManager wifiManager;
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        //open wifi
-        boolean iwe = wifiManager.isWifiEnabled();
-        if (!wifiManager.isWifiEnabled()){
-            wifiManager.setWifiEnabled(true);
-        }
         wifiList = (List<android.net.wifi.ScanResult>) wifiManager.getScanResults();
-        //close wifi
-        if (wifiManager.isWifiEnabled()){
-            wifiManager.setWifiEnabled(false);
-        }
 
         double level [] = new double[wifiList.size()];
         String ssid [] = new String[wifiList.size()];
@@ -522,6 +539,10 @@ public class MainActivity extends ActionBarActivity {
         String ssidName_2 ="ap2";
         double level_3 = 0;
         String ssidName_3 ="ap3";
+        double level_4 = 0;
+        String ssidName_4 ="ap4";
+        double level_5 = 0;
+        String ssidName_5 ="ap5";
 
         for (int i=0;i<wifiList.size();i++) {
             level [i] = wifiList.get(i).level;
@@ -535,16 +556,24 @@ public class MainActivity extends ActionBarActivity {
             else if (ssid[i].equals(ssidName_3)){
                 level_3 = level[i];
             }
+            else if (ssid[i].equals(ssidName_4)){
+                level_4 = level[i];
+            }
+            else if (ssid[i].equals(ssidName_5)){
+                level_5 = level[i];
+            }
             else {
                 Log.d("MainActivity", "finding the APs!" );
                 /*Toast.makeText(this, "finding the APs!", Toast.LENGTH_SHORT).show();*/
             }
         }
 
-        double level_ [] = new double[3];
+        double level_ [] = new double[5];
         level_ [0] = level_1;
         level_ [1] = level_2;
         level_ [2] = level_3;
+        level_ [3] = level_3;
+        level_ [4] = level_3;
 
         return level_;
 
